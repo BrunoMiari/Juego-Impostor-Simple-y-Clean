@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego del Impostor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Pantalla de inicio -->
+        <div id="home-screen" class="screen active">
+            <div class="logo">
+                <h1>🎭 IMPOSTOR</h1>
+                <p>Juego para amigos</p>
+            </div>
+            <button class="btn-primary" onclick="showSetup()">Nuevo Juego</button>
+            <button class="btn-secondary" onclick="showRules()">Cómo Jugar</button>
+        </div>
+
+        <!-- Pantalla de configuración -->
+        <div id="setup-screen" class="screen">
+            <h2>Configurar Juego</h2>
+
+            <div class="setup-section">
+                <label>Número de jugadores (3-12):</label>
+                <input type="number" id="player-count" min="3" max="12" value="5">
+            </div>
+
+            <div class="setup-section">
+                <label>Tema:</label>
+                <select id="theme-select" onchange="toggleThemeVisibility()">
+                    <option value="random">🎲 Aleatorio</option>
+                    <option value="animales">🐾 Animales</option>
+                    <option value="comida">🍕 Comida</option>
+                    <option value="deportes">⚽ Deportes</option>
+                    <option value="peliculas">🎬 Películas</option>
+                    <option value="paises">🌍 Países</option>
+                    <option value="profesiones">👨‍💼 Profesiones</option>
+                    <option value="colores">🎨 Colores</option>
+                    <option value="objetos">📱 Objetos</option>
+                    <option value="musica">🎵 Música</option>
+                    <option value="tecnologia">💻 Tecnología</option>
+                    <option value="naturaleza">🌿 Naturaleza</option>
+                    <option value="ciencia">🔬 Ciencia</option>
+                </select>
+            </div>
+
+            <div class="setup-section" id="theme-visibility-section">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="show-theme"> Los jugadores conocen el tema
+                </label>
+            </div>
+
+            <div class="setup-section">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="give-hint"> Dar pista al impostor
+                </label>
+            </div>
+
+            <div class="setup-section">
+                <label>Modo de juego:</label>
+                <select id="special-mode">
+                    <option value="normal">Normal</option>
+                    <option value="crazy">🤪 Modo Loco</option>
+                </select>
+            </div>
+
+            <div class="setup-section">
+                <label>Tipo de rondas:</label>
+                <select id="round-type">
+                    <option value="elimination">🎯 Eliminación por rondas</option>
+                    <option value="single-vote">�A️ Una sola votación</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" onclick="showPlayerNames()">Continuar</button>
+            <button class="btn-secondary" onclick="showHome()">Volver</button>
+        </div>
+
+        <!-- Pantalla de nombres -->
+        <div id="names-screen" class="screen">
+            <h2>Nombres de Jugadores</h2>
+            <div id="player-names-container"></div>
+            <button class="btn-primary" onclick="startGame()">Iniciar Juego</button>
+            <button class="btn-secondary" onclick="showSetup()">Volver</button>
+        </div>
+
+        <!-- Pantalla de roles -->
+        <div id="roles-screen" class="screen">
+            <h2>Ver Roles</h2>
+            <div class="role-info">
+                <p>Cada jugador debe ver su rol por turnos</p>
+                <p id="current-player-name"></p>
+            </div>
+            <button id="show-role-btn" class="btn-primary" onclick="showRole()">Ver mi rol</button>
+            <div id="role-display" class="role-card hidden">
+                <div id="role-content"></div>
+                <button id="next-player-btn" class="btn-secondary" onclick="nextPlayer()">Siguiente jugador</button>
+                <button id="start-discussion-btn" class="btn-success hidden" onclick="startDiscussion()">Iniciar
+                    Discusión</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de quien empieza -->
+        <div id="starter-screen" class="screen">
+            <div class="starter-announcement">
+                <h2>🎯 Comienza la Discusión</h2>
+                <div class="starter-player">
+                    <div class="starter-icon">🗣️</div>
+                    <div id="starter-name" class="starter-name"></div>
+                    <p>empieza la discusión</p>
+                </div>
+                <button class="btn-primary" onclick="proceedToDiscussion()">Continuar</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de discusión -->
+        <div id="discussion-screen" class="screen">
+            <h2>💬 Fase de Discusión</h2>
+            <div class="game-info">
+                <div id="theme-info"></div>
+                <div class="timer">
+                    <span id="timer-display">5:00</span>
+                </div>
+            </div>
+            <div class="players-list">
+                <h3>Jugadores:</h3>
+                <div id="players-display"></div>
+            </div>
+            <button class="btn-primary" onclick="startVoting()">Iniciar Votación</button>
+            <button id="manual-vote-btn" class="btn-success hidden" onclick="startVoting()">🗳️ Votar Ahora</button>
+            <button class="btn-secondary" onclick="showHome()">Nuevo Juego</button>
+        </div>
+
+        <!-- Pantalla de votación -->
+        <div id="voting-screen" class="screen">
+            <h2>🗳️ Votación</h2>
+            <p>¿Quién creen que es el impostor?</p>
+            <div id="voting-options"></div>
+            <button id="reveal-btn" class="btn-primary" onclick="revealResults()">Revelar Resultados</button>
+            <button class="btn-secondary" onclick="showHome()">Nuevo Juego</button>
+        </div>
+
+        <!-- Pantalla de eliminación -->
+        <div id="elimination-screen" class="screen">
+            <div class="elimination-announcement">
+                <h2>🗳️ Resultado de la Votación</h2>
+                <div class="eliminated-player">
+                    <div class="elimination-icon">❌</div>
+                    <div id="eliminated-name" class="eliminated-name"></div>
+                    <div id="eliminated-role" class="eliminated-role"></div>
+                    <p id="elimination-message"></p>
+                </div>
+                <button id="continue-game-btn" class="btn-primary" onclick="continueAfterElimination()">Continuar Juego</button>
+                <button id="end-game-btn" class="btn-success hidden" onclick="showFinalResults()">Ver Resultados Finales</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de resultados -->
+        <div id="results-screen" class="screen">
+            <h2>🎉 Resultados Finales</h2>
+            <div id="results-content"></div>
+            <button class="btn-primary" onclick="showHome()">Nuevo Juego</button>
+        </div>
+
+        <!-- Pantalla de reglas -->
+        <div id="rules-screen" class="screen">
+            <h2>📋 Cómo Jugar</h2>
+            <div class="rules-content">
+                <h3>Objetivo:</h3>
+                <p>Los <strong>inocentes</strong> deben descubrir quién es el <strong>impostor</strong>.</p>
+                <p>El <strong>impostor</strong> debe pasar desapercibido.</p>
+
+                <h3>Cómo jugar:</h3>
+                <ol>
+                    <li>Cada jugador ve su rol secretamente</li>
+                    <li>Los inocentes reciben una palabra del tema elegido</li>
+                    <li>El impostor NO conoce la palabra (o recibe una pista)</li>
+                    <li>Todos discuten y hacen preguntas sobre la palabra</li>
+                    <li>Al final, votan por quién creen que es el impostor</li>
+                </ol>
+
+                <h3>Modos especiales:</h3>
+                <p><strong>Todos Inocentes:</strong> Nadie es impostor, deben darse cuenta</p>
+                <p><strong>Todos Impostores:</strong> Nadie conoce la palabra real</p>
+            </div>
+            <button class="btn-primary" onclick="showHome()">Volver</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

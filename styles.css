@@ -1,0 +1,459 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.screen {
+    display: none;
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo h1 {
+    font-size: 3em;
+    color: #667eea;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo p {
+    color: #666;
+    font-size: 1.2em;
+}
+
+h2 {
+    text-align: center;
+    color: #667eea;
+    margin-bottom: 30px;
+    font-size: 2em;
+}
+
+h3 {
+    color: #667eea;
+    margin: 20px 0 10px 0;
+}
+
+.btn-primary, .btn-secondary, .btn-success {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.btn-secondary:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+}
+
+.setup-section {
+    margin: 20px 0;
+}
+
+.setup-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.setup-section input, .setup-section select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.setup-section input:focus, .setup-section select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: auto !important;
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.player-name-input {
+    margin: 10px 0;
+}
+
+.player-name-input input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.role-info {
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.role-card {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.role-card.innocent {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+}
+
+.role-card h3 {
+    color: white;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.role-card p {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.word-display {
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.game-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.timer {
+    font-size: 2em;
+    font-weight: bold;
+    color: #667eea;
+    margin: 10px 0;
+}
+
+.players-list {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.player-item {
+    background: white;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.voting-option {
+    background: white;
+    border: 2px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: bold;
+}
+
+.voting-option:hover {
+    border-color: #667eea;
+    background: #f8f9fa;
+}
+
+.voting-option.selected {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.results-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.winner-announcement {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.winner-announcement.innocent-win {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    color: white;
+}
+
+.winner-announcement.impostor-win {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+}
+
+.rules-content {
+    line-height: 1.6;
+}
+
+.rules-content ol {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.rules-content li {
+    margin: 8px 0;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .screen {
+        padding: 20px;
+    }
+    
+    .logo h1 {
+        font-size: 2.5em;
+    }
+    
+    h2 {
+        font-size: 1.5em;
+    }
+}/* E
+stilos para la pantalla de quien empieza */
+.starter-announcement {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.starter-player {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 20px;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+}
+
+.starter-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+    animation: bounce 1s infinite alternate;
+}
+
+.starter-name {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.starter-player p {
+    font-size: 1.3em;
+    margin-top: 10px;
+    opacity: 0.9;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bounce {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive para móviles */
+@media (max-width: 480px) {
+    .starter-icon {
+        font-size: 3em;
+    }
+    
+    .starter-name {
+        font-size: 2em;
+    }
+    
+    .starter-player {
+        padding: 30px 15px;
+    }
+}
+* Estilos para la pantalla de eliminación */
+.elimination-announcement {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.eliminated-player {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 20px;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: shake 0.5s ease-in-out;
+}
+
+.eliminated-player.innocent {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+}
+
+.elimination-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+    animation: bounce 1s infinite alternate;
+}
+
+.eliminated-name {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.eliminated-role {
+    font-size: 1.5em;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+#elimination-message {
+    font-size: 1.2em;
+    margin-top: 20px;
+    opacity: 0.9;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Responsive para móviles */
+@media (max-width: 480px) {
+    .elimination-icon {
+        font-size: 3em;
+    }
+    
+    .eliminated-name {
+        font-size: 2em;
+    }
+    
+    .eliminated-role {
+        font-size: 1.3em;
+    }
+    
+    .eliminated-player {
+        padding: 30px 15px;
+    }
+}
