@@ -33,6 +33,7 @@
                 <label>Tema:</label>
                 <select id="theme-select" onchange="toggleThemeVisibility()">
                     <option value="random">🎲 Aleatorio</option>
+                    <option value="custom">⚙️ Personalizado</option>
                     <option value="animales">🐾 Animales</option>
                     <option value="comida">🍕 Comida</option>
                     <option value="deportes">⚽ Deportes</option>
@@ -46,6 +47,12 @@
                     <option value="naturaleza">🌿 Naturaleza</option>
                     <option value="ciencia">🔬 Ciencia</option>
                 </select>
+            </div>
+
+            <div class="setup-section" id="custom-categories-section" style="display: none;">
+                <button class="btn-categories" onclick="openCategoriesModal()">
+                    ⚙️ Seleccionar Categorías (<span id="selected-count">12</span>)
+                </button>
             </div>
 
             <div class="setup-section" id="theme-visibility-section">
@@ -62,17 +69,25 @@
 
             <div class="setup-section">
                 <label>Modo de juego:</label>
-                <select id="special-mode">
+                <select id="special-mode" onchange="toggleRolesConfig()">
                     <option value="normal">Normal</option>
                     <option value="crazy">🤪 Modo Loco</option>
+                    <option value="roles-plus">🎭 Roles+</option>
                 </select>
+            </div>
+
+            <!-- Configuración de roles para modo Roles+ -->
+            <div id="roles-config" class="setup-section" style="display: none;">
+                <button class="btn-categories" onclick="openRolesModal()">
+                    🎭 Configurar Roles (<span id="roles-summary">1 Impostor, 1 Ayudante, 1 Niño</span>)
+                </button>
             </div>
 
             <div class="setup-section">
                 <label>Tipo de rondas:</label>
                 <select id="round-type">
                     <option value="elimination">🎯 Eliminación por rondas</option>
-                    <option value="single-vote">�A️ Una sola votación</option>
+                    <option value="single-vote">🗳️ Una sola votación</option>
                 </select>
             </div>
 
@@ -88,19 +103,38 @@
             <button class="btn-secondary" onclick="showSetup()">Volver</button>
         </div>
 
-        <!-- Pantalla de roles -->
+        <!-- Pantalla de selección de jugadores -->
         <div id="roles-screen" class="screen">
-            <h2>Ver Roles</h2>
+            <h2>Seleccionar Jugador</h2>
             <div class="role-info">
-                <p>Cada jugador debe ver su rol por turnos</p>
-                <p id="current-player-name"></p>
+                <p>Cada jugador debe seleccionar su nombre para ver su rol</p>
             </div>
-            <button id="show-role-btn" class="btn-primary" onclick="showRole()">Ver mi rol</button>
-            <div id="role-display" class="role-card hidden">
-                <div id="role-content"></div>
-                <button id="next-player-btn" class="btn-secondary" onclick="nextPlayer()">Siguiente jugador</button>
-                <button id="start-discussion-btn" class="btn-success hidden" onclick="startDiscussion()">Iniciar
-                    Discusión</button>
+            <div id="players-grid" class="players-grid"></div>
+            <button id="start-discussion-btn" class="btn-success hidden" onclick="startDiscussion()">Iniciar
+                Discusión</button>
+        </div>
+        
+        <!-- Botón Nuevo Juego fuera del contenedor principal -->
+        <div id="new-game-container" class="new-game-outside">
+            <button class="btn-secondary" onclick="showHomeAndReset()">🎲 Nuevo Juego</button>
+        </div>
+
+        <!-- Pantalla individual de rol -->
+        <div id="individual-role-screen" class="screen">
+            <h2 id="selected-player-name"></h2>
+            <div class="role-reveal-container">
+                <div class="role-reveal-card" onclick="revealRoleFixed()">
+                    <div class="role-reveal-text">
+                        <h3>👆 Toca para ver tu rol</h3>
+                        <p>Asegúrate de que nadie más esté mirando</p>
+                    </div>
+                </div>
+                <div id="role-content-display" class="role-card hidden">
+                    <div id="individual-role-content"></div>
+                </div>
+            </div>
+            <div class="role-actions">
+                <button class="btn-secondary" onclick="backToPlayerSelection()">Volver a selección</button>
             </div>
         </div>
 
@@ -132,7 +166,7 @@
             </div>
             <button class="btn-primary" onclick="startVoting()">Iniciar Votación</button>
             <button id="manual-vote-btn" class="btn-success hidden" onclick="startVoting()">🗳️ Votar Ahora</button>
-            <button class="btn-secondary" onclick="showHome()">Nuevo Juego</button>
+            <button class="btn-secondary" onclick="showHomeAndReset()">Nuevo Juego</button>
         </div>
 
         <!-- Pantalla de votación -->
@@ -141,7 +175,7 @@
             <p>¿Quién creen que es el impostor?</p>
             <div id="voting-options"></div>
             <button id="reveal-btn" class="btn-primary" onclick="revealResults()">Revelar Resultados</button>
-            <button class="btn-secondary" onclick="showHome()">Nuevo Juego</button>
+            <button class="btn-secondary" onclick="showHomeAndReset()">Nuevo Juego</button>
         </div>
 
         <!-- Pantalla de eliminación -->
@@ -154,8 +188,10 @@
                     <div id="eliminated-role" class="eliminated-role"></div>
                     <p id="elimination-message"></p>
                 </div>
-                <button id="continue-game-btn" class="btn-primary" onclick="continueAfterElimination()">Continuar Juego</button>
-                <button id="end-game-btn" class="btn-success hidden" onclick="showFinalResults()">Ver Resultados Finales</button>
+                <button id="continue-game-btn" class="btn-primary" onclick="continueAfterElimination()">Continuar
+                    Juego</button>
+                <button id="end-game-btn" class="btn-success hidden" onclick="showFinalResults()">Ver Resultados
+                    Finales</button>
             </div>
         </div>
 
@@ -163,7 +199,7 @@
         <div id="results-screen" class="screen">
             <h2>🎉 Resultados Finales</h2>
             <div id="results-content"></div>
-            <button class="btn-primary" onclick="showHome()">Nuevo Juego</button>
+            <button class="btn-primary" onclick="showHomeAndReset()">Nuevo Juego</button>
         </div>
 
         <!-- Pantalla de reglas -->
@@ -184,10 +220,135 @@
                 </ol>
 
                 <h3>Modos especiales:</h3>
-                <p><strong>Todos Inocentes:</strong> Nadie es impostor, deben darse cuenta</p>
-                <p><strong>Todos Impostores:</strong> Nadie conoce la palabra real</p>
+                <p><strong>Modo Loco:</strong></p>
+                <p>• <strong>Todos Inocentes:</strong> Nadie es impostor, deben darse cuenta</p>
+                <p>• <strong>Todos Impostores:</strong> Nadie conoce la palabra real</p>
+                
+                <p><strong>Modo Roles+:</strong> Añade roles especiales al juego</p>
+                <p>• <strong>🎭 Impostor:</strong> No conoce la palabra (como siempre)</p>
+                <p>• <strong>🟠 Ayudante:</strong> Conoce la palabra y quién es el impostor. Debe ayudar al impostor a ganar sin ser descubierto. Tiene palabras TABÚ que no puede decir.</p>
+                <p>• <strong>🔵 Niño Inocente:</strong> Es un inocente normal, pero si lo eliminan, ¡ÉL GANA! Debe jugar normal pero si sospechan de él, perfecto.</p>
+                <p>• <strong>😇 Inocentes:</strong> Conocen la palabra (como siempre)</p>
             </div>
             <button class="btn-primary" onclick="showHome()">Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de categorías personalizadas -->
+    <div id="categories-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Seleccionar Categorías</h3>
+                <button class="modal-close" onclick="closeCategoriesModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="categories-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-animales" value="animales" checked> 🐾 Animales
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-comida" value="comida" checked> 🍕 Comida
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-deportes" value="deportes" checked> ⚽ Deportes
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-peliculas" value="peliculas" checked> 🎬 Películas
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-paises" value="paises" checked> 🌍 Países
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-profesiones" value="profesiones" checked> 👨‍💼 Profesiones
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-colores" value="colores" checked> 🎨 Colores
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-objetos" value="objetos" checked> 📱 Objetos
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-musica" value="musica" checked> 🎵 Música
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-tecnologia" value="tecnologia" checked> 💻 Tecnología
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-naturaleza" value="naturaleza" checked> 🌿 Naturaleza
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cat-ciencia" value="ciencia" checked> 🔬 Ciencia
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-actions">
+                    <button type="button" class="btn-small" onclick="selectAllCategories()">Todas</button>
+                    <button type="button" class="btn-small" onclick="deselectAllCategories()">Ninguna</button>
+                </div>
+                <button class="btn-primary" onclick="saveCategoriesSelection()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de configuración de roles -->
+    <div id="roles-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎭 Configuración de Roles</h3>
+                <button class="modal-close" onclick="closeRolesModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="roles-config-compact">
+                    <div class="role-item impostor">
+                        <div class="role-header">
+                            <span class="role-emoji">🎭</span>
+                            <span class="role-name">Impostores</span>
+                        </div>
+                        <select id="impostor-count" class="role-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </div>
+                    
+                    <div class="role-item helper">
+                        <div class="role-header">
+                            <span class="role-emoji">🟠</span>
+                            <span class="role-name">Ayudantes</span>
+                        </div>
+                        <select id="helper-count" class="role-select">
+                            <option value="0">0</option>
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </div>
+                    
+                    <div class="role-item child">
+                        <div class="role-header">
+                            <span class="role-emoji">🔵</span>
+                            <span class="role-name">Niños</span>
+                        </div>
+                        <select id="child-count" class="role-select">
+                            <option value="0">0</option>
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="roles-warning" id="roles-warning" style="display: none;">
+                    <div class="warning-content">
+                        <span class="warning-icon">⚠️</span>
+                        <span class="warning-text">Necesitas más jugadores para esta configuración</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-actions">
+                    <button type="button" class="btn-small" onclick="resetRolesConfig()">Resetear</button>
+                </div>
+                <button class="btn-primary" onclick="saveRolesConfiguration()">Guardar</button>
+            </div>
         </div>
     </div>
 
