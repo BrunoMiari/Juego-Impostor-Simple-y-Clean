@@ -363,6 +363,53 @@ const gameData = {
             'Minero', 'Leñador', 'Pastor', 'Apicultor', 'Floricultor'
         ],
 
+        // Expandir colores
+        colores: [
+            // Básicos
+            'Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Negro',
+            'Blanco', 'Gris', 'Marrón',
+
+            // Rojos
+            'Carmesí', 'Escarlata', 'Bermellón', 'Granate', 'Burdeos', 'Vino', 'Cereza',
+            'Frambuesa', 'Fresa', 'Sandía', 'Tomate', 'Ladrillo', 'Óxido', 'Sangre',
+
+            // Azules
+            'Celeste', 'Cielo', 'Marino', 'Cobalto', 'Índigo', 'Añil', 'Turquesa',
+            'Aguamarina', 'Cian', 'Zafiro', 'Acero', 'Petróleo', 'Medianoche', 'Real',
+
+            // Verdes
+            'Esmeralda', 'Jade', 'Oliva', 'Lima', 'Menta', 'Pistacho', 'Bosque',
+            'Musgo', 'Hierba', 'Pino', 'Salvia', 'Malaquita', 'Aguacate', 'Militar',
+
+            // Amarillos
+            'Dorado', 'Mostaza', 'Ámbar', 'Limón', 'Canario', 'Maíz', 'Miel',
+            'Champán', 'Crema', 'Vainilla', 'Mantequilla', 'Oro', 'Azufre',
+
+            // Naranjas
+            'Coral', 'Salmón', 'Melocotón', 'Albaricoque', 'Mandarina', 'Calabaza',
+            'Zanahoria', 'Cobre', 'Bronce', 'Óxido', 'Papaya', 'Mango',
+
+            // Morados
+            'Violeta', 'Lila', 'Lavanda', 'Púrpura', 'Magenta', 'Fucsia', 'Ciruela',
+            'Berenjena', 'Amatista', 'Orquídea', 'Malva', 'Uva',
+
+            // Rosas
+            'Rosa', 'Fucsia', 'Magenta', 'Salmón', 'Coral', 'Durazno', 'Chicle',
+            'Flamingo', 'Cereza', 'Frambuesa', 'Fresa', 'Sandía',
+
+            // Marrones
+            'Caoba', 'Chocolate', 'Café', 'Canela', 'Nuez', 'Castaño', 'Tierra',
+            'Arena', 'Beige', 'Tostado', 'Sepia', 'Cacao', 'Cognac', 'Whisky',
+
+            // Grises
+            'Plateado', 'Plomo', 'Carbón', 'Grafito', 'Pizarra', 'Acero', 'Humo',
+            'Ceniza', 'Perla', 'Plata', 'Mercurio', 'Antracita',
+
+            // Otros
+            'Marfil', 'Crema', 'Hueso', 'Perla', 'Nácar', 'Opalino', 'Iridiscente',
+            'Metálico', 'Brillante', 'Mate', 'Satinado', 'Perlado', 'Fluorescente',
+            'Neón', 'Pastel', 'Tierra', 'Natural', 'Neutro'
+        ],
 
         // Expandir objetos
         objetos: [
@@ -436,10 +483,8 @@ const gameData = {
     currentPlayerIndex: 0,
     selectedWord: '',
     selectedTheme: '',
-    impostorIndexes: [], // Cambiado a array para múltiples impostores
+    impostorIndex: -1,
     gameMode: 'normal',
-    crazyModeActive: false, // Nuevo: controla si el modo loco está realmente activo (oculto)
-    crazyModeType: '', // 'all-impostor' o 'all-innocent'
     showTheme: false,
     giveHint: false,
     roundType: 'elimination',
@@ -453,8 +498,7 @@ const gameData = {
     // Nuevos roles para modo Roles+
     helperIndexes: [], // Índices de los Ayudantes
     childIndexes: [],  // Índices de los Niños
-    tabooWords: [],     // Palabras tabú para los Ayudantes
-    eyeCount: 0 // Nuevo: contador de visualizaciones de rol
+    tabooWords: []     // Palabras tabú para los Ayudantes
 };
 
 // Funciones de navegación
@@ -497,11 +541,6 @@ function showSetup() {
     toggleThemeVisibility();
 }
 
-// Función auxiliar para capitalizar la primera letra
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 function showRules() {
     showScreen('rules-screen');
 }
@@ -538,9 +577,39 @@ function generatePlayerNameInputs(count) {
     }
 }
 
+function startGame() {
+    // Recoger nombres de jugadores
+    const playerCount = parseInt(document.getElementById('player-count').value);
+    gameData.players = [];
 
+    for (let i = 1; i <= playerCount; i++) {
+        rn;
+    }
 
+    // Guardar configuraciones actuales
+    saveCurrentSettings();
 
+    generatePlayerNameInputs(playerCount);
+    showScreen('names-screen');
+}
+
+function generatePlayerNameInputs(count) {
+    const container = document.getElementById('player-names-container');
+    container.innerHTML = '';
+
+    for (let i = 1; i <= count; i++) {
+        const div = document.createElement('div');
+        div.className = 'player-name-input';
+        // Si hay configuraciones guardadas, usar esos nombres, sino usar nombres por defecto
+        const defaultName = gameData.lastSettings && gameData.lastSettings.playerNames && gameData.lastSettings.playerNames[i - 1]
+            ? gameData.lastSettings.playerNames[i - 1]
+            : `Jugador ${i}`;
+        div.innerHTML = `
+            <input type="text" placeholder="Jugador ${i}" id="player-${i}" value="${defaultName}" required>
+        `;
+        container.appendChild(div);
+    }
+}
 
 function startGame() {
     // Recoger nombres de jugadores
@@ -560,191 +629,7 @@ function startGame() {
     updateCurrentPlayer();
 }
 
-// Función mejorada para configurar el juego con modo loco
-function setupGame() {
-    const themeSelect = document.getElementById('theme-select').value;
-    const specialMode = document.getElementById('special-mode').value;
-    const impostorCountRolesPlus = parseInt(document.getElementById('impostor-count').value) || 1;
-
-    gameData.showTheme = document.getElementById('show-theme').checked;
-    gameData.giveHint = document.getElementById('give-hint').checked;
-    gameData.roundType = document.getElementById('round-type').value;
-    gameData.currentPlayerIndex = 0;
-    gameData.currentRound = 1;
-    gameData.eliminatedPlayers = [];
-    gameData.activePlayers = [...gameData.players];
-    gameData.eyeCount = 0; // Reiniciar contador de ojos
-
-
-    // Configurar tiempo de discusión
-    const timeInput = document.getElementById('discussion-time');
-    if (timeInput) {
-        gameData.discussionTime = parseInt(timeInput.value) || 0;
-    } else {
-        gameData.discussionTime = 0; // Por defecto infinito
-    }
-
-    // Resetear índices de roles y contadores
-    gameData.impostorIndexes = [];
-    gameData.helperIndexes = [];
-    gameData.childIndexes = [];
-    gameData.crazyModeActive = false;
-    gameData.crazyModeType = '';
-
-    // Inicializar contador de ojos por jugador
-    gameData.playerViews = {};
-    gameData.players.forEach((_, index) => {
-        gameData.playerViews[index] = 0;
-    });
-
-    // Lógica del tema
-    if (themeSelect === 'random') {
-        const categories = getSelectedCategories();
-        if (categories.length > 0) {
-            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-            const words = gameData.themes[randomCategory];
-            gameData.selectedTheme = capitalizeFirstLetter(randomCategory);
-            gameData.selectedWord = words[Math.floor(Math.random() * words.length)];
-        } else {
-            // Fallback por si no hay categorías seleccionadas
-            const themesKeys = Object.keys(gameData.themes);
-            const randomThemeKey = themesKeys[Math.floor(Math.random() * themesKeys.length)];
-            gameData.selectedTheme = capitalizeFirstLetter(randomThemeKey);
-            gameData.selectedWord = gameData.themes[randomThemeKey][Math.floor(Math.random() * gameData.themes[randomThemeKey].length)];
-        }
-    } else if (themeSelect === 'custom') {
-        const categories = getSelectedCategories();
-        if (categories.length > 0) {
-            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-            const words = gameData.themes[randomCategory];
-            gameData.selectedTheme = capitalizeFirstLetter(randomCategory);
-            gameData.selectedWord = words[Math.floor(Math.random() * words.length)];
-        } else {
-            // Fallback
-            const themesKeys = Object.keys(gameData.themes);
-            const randomThemeKey = themesKeys[Math.floor(Math.random() * themesKeys.length)];
-            gameData.selectedTheme = capitalizeFirstLetter(randomThemeKey);
-            gameData.selectedWord = gameData.themes[randomThemeKey][Math.floor(Math.random() * gameData.themes[randomThemeKey].length)];
-        }
-    } else {
-        const words = gameData.themes[themeSelect];
-        gameData.selectedTheme = document.querySelector(`#theme-select option[value="${themeSelect}"]`).text.split(' ')[1] || themeSelect;
-        gameData.selectedWord = words[Math.floor(Math.random() * words.length)];
-    }
-
-    // Configurar pista para impostor
-    if (gameData.giveHint) {
-        // Normalizar clave de tema para buscar pistas
-        let themeKey = themeSelect;
-        if (themeSelect === 'random' || themeSelect === 'custom') {
-            themeKey = gameData.selectedTheme.toLowerCase();
-            // Mapeo inverso de nombres amigables a claves
-            const friendlyToKey = {
-                'Películas': 'peliculas',
-                'Países': 'paises',
-                'Música': 'musica',
-                'Tecnología': 'tecnologia',
-                'Ciencia': 'ciencia'
-            };
-            if (friendlyToKey[gameData.selectedTheme]) {
-                themeKey = friendlyToKey[gameData.selectedTheme];
-            }
-        }
-
-        gameData.impostorHint = generateAdvancedHint(gameData.selectedWord, themeKey);
-    }
-
-    // Lógica para asignar roles e impostores
-    let availableIndexes = gameData.players.map((_, i) => i);
-
-    // Determinar modo de juego y lógica de Modo Loco
-    let actualMode = specialMode;
-    let isCrazyTriggered = false;
-
-    // Si se seleccionó Modo Loco explícitamente O si está activado en Roles+ (implementar checkbox luego)
-    // Por ahora asumimos que 'crazy' es la selección del dropdown
-
-    // Lógica de activación de Modo Loco (Oculto)
-    if (specialMode === 'crazy') {
-        const chance = Math.random();
-        // 20% de probabilidad de que se active el modo loco real
-        if (chance < 0.20) {
-            isCrazyTriggered = true;
-            gameData.crazyModeActive = true;
-            // 50% todos impostores, 50% todos inocentes
-            gameData.crazyModeType = Math.random() < 0.5 ? 'all-impostor' : 'all-innocent';
-        }
-        // Visualmente se comportará como 'normal' para no delatar
-        actualMode = 'normal';
-    } else if (specialMode === 'roles-plus') {
-        actualMode = 'roles-plus';
-        // Aquí podríamos chequear un checkbox de "Incluir Modo Loco" si existiera
-        const crazyInRolesPlus = document.getElementById('roles-crazy-toggle') && document.getElementById('roles-crazy-toggle').checked;
-        if (crazyInRolesPlus && Math.random() < 0.20) {
-            isCrazyTriggered = true;
-            gameData.crazyModeActive = true;
-            gameData.crazyModeType = Math.random() < 0.5 ? 'all-impostor' : 'all-innocent';
-            // Si se activa modo loco, no asignamos roles especiales, todos son iguales
-            // Pero visualmente mostraremos roles+ 'falsos' o simplemente 'Impostor/Inocente' estándar?
-            // El usuario pidió: "debe ser igual al modo normal". 
-            // Si estamos en Roles+, y se activa modo loco, ¿deben ver roles de Roles+ distribuidos falsamente?
-            // Para simplificar y cumplir "igual al modo normal", forzaremos apariencia de modo Normal o Roles+ estándar
-            // pero internamente todos son lo mismo.
-        }
-    }
-
-    gameData.gameMode = actualMode;
-
-    if (gameData.crazyModeActive) {
-        if (gameData.crazyModeType === 'all-impostor') {
-            // Todos son impostores
-            gameData.impostorIndexes = [...availableIndexes];
-        } else {
-            // Todos son inocentes (nadie es impostor)
-            gameData.impostorIndexes = [];
-        }
-        // En modo loco activo, no asignamos roles especiales reales
-    } else {
-        // Asignación REAL de roles (No Modo Loco o Modo Loco no activado)
-
-        let impostorCount = 1;
-        if (actualMode === 'roles-plus') {
-            impostorCount = parseInt(document.getElementById('impostor-count').value) || 1;
-        }
-
-        // Asignar Impostores
-        for (let i = 0; i < impostorCount; i++) {
-            if (availableIndexes.length > 0) {
-                const impIdx = Math.floor(Math.random() * availableIndexes.length);
-                gameData.impostorIndexes.push(availableIndexes.splice(impIdx, 1)[0]);
-            }
-        }
-
-        // Solo asignar roles extra si es Roles+ y NO se activó el modo loco
-        if (actualMode === 'roles-plus') {
-            const helperCount = parseInt(document.getElementById('helper-count').value) || 0;
-            const childCount = parseInt(document.getElementById('child-count').value) || 0;
-
-            // Asignar ayudantes
-            for (let i = 0; i < helperCount; i++) {
-                if (availableIndexes.length > 0) {
-                    const helperIdx = Math.floor(Math.random() * availableIndexes.length);
-                    gameData.helperIndexes.push(availableIndexes.splice(helperIdx, 1)[0]);
-                }
-            }
-
-            // Asignar niños
-            for (let i = 0; i < childCount; i++) {
-                if (availableIndexes.length > 0) {
-                    const childIdx = Math.floor(Math.random() * availableIndexes.length);
-                    gameData.childIndexes.push(availableIndexes.splice(childIdx, 1)[0]);
-                }
-            }
-
-
-        }
-    }
-}
+// Esta función se reemplazó por la nueva versión en el código añadido
 
 // Variables para el nuevo sistema de roles
 let viewedPlayers = new Set();
@@ -765,20 +650,7 @@ function generateRolesPlusContent(currentPlayer) {
     let content = '';
     let className = 'role-card';
 
-    // Determinar rol real o falso (si modo loco está activo, simular distribución normal visualmente es muy complejo, 
-    // así que mostraremos lo que son realmente para que se confundan: todos impostores o todos inocentes)
-    // PERO el usuario dijo: "igual al modo normal". 
-    // En modo normal, si todos son impostores, todos ven "Impostor". Si todos son inocentes, todos ven "Inocente". 
-    // Y creerán que los demás tienen roles distintos.
-
-    // Si es Roles+ y Modo Loco NO está activo, mostrar roles normales.
-    // Si Modo Loco ESTÁ activo, todos verán Impostor o Inocente (sin roles especiales).
-    // OJO: Si están en Roles+, esperarán ver roles especiales. 
-    // Si todos ven "Inocente", pensarán que son el inocente estándar.
-
-    const isImpostor = gameData.impostorIndexes.includes(currentPlayer);
-
-    if (isImpostor) {
+    if (currentPlayer === gameData.impostorIndex) {
         className = 'role-card';
         content = `
             <h3>🎭 IMPOSTOR</h3>
@@ -791,19 +663,13 @@ function generateRolesPlusContent(currentPlayer) {
         }
     } else if (gameData.helperIndexes.includes(currentPlayer)) {
         className = 'role-card helper';
-        // Ayudante necesita saber quiénes son los impostores
-        const impostorNames = gameData.impostorIndexes.map(idx => gameData.players[idx]).join(', ');
-
         content = `
             <h3>🟠 AYUDANTE</h3>
             <p>¡Ayuda al impostor a ganar!</p>
-            <p>Conoces la palabra y a los impostores</p>
+            <p>Conoces la palabra y quién es el impostor</p>
             <div class="word-display">${gameData.selectedWord}</div>
-            <p><strong>Impostor(es):</strong> ${impostorNames}</p>
+            <p><strong>El impostor es:</strong> ${gameData.players[gameData.impostorIndex]}</p>
         `;
-
-        // Taboo words section removed
-
     } else if (gameData.childIndexes.includes(currentPlayer)) {
         className = 'role-card child';
         content = `
@@ -826,15 +692,6 @@ function generateRolesPlusContent(currentPlayer) {
         content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p>`;
     }
 
-    // Añadir contador de ojos
-    const eyeCount = gameData.playerViews ? (gameData.playerViews[currentPlayer] || 0) : 0;
-    content += `
-        <div class="eye-counter">
-            <span class="eye-icon">👁️</span>
-            <span class="eye-number">${eyeCount}</span>
-        </div>
-    `;
-
     return { content, className };
 }
 
@@ -845,19 +702,6 @@ function revealRoleFixed() {
     const roleCard = document.getElementById('role-content-display');
     const revealCard = document.querySelector('.role-reveal-card');
 
-    // Incrementar contador de ojos cada vez que alguien ve su rol
-    gameData.eyeCount++;
-
-    // Incrementar contador específico del jugador
-    if (!gameData.playerViews) {
-        gameData.playerViews = {};
-    }
-
-    if (gameData.playerViews[currentPlayer] === undefined) {
-        gameData.playerViews[currentPlayer] = 0;
-    }
-    gameData.playerViews[currentPlayer]++;
-
     let content = '';
     let className = 'role-card';
 
@@ -867,45 +711,60 @@ function revealRoleFixed() {
         content = rolesPlusResult.content;
         className = rolesPlusResult.className;
     } else {
-        // Manejar modo Normal (que puede ser Normal real o Modo Loco oculto)
-        // En setupGame ya seteamos gameMode a 'normal' incluso si es crazy.
-        // Así que aquí solo chequeamos si es impostor o no en los arrays.
+        // Manejar otros modos
+        let isImpostor = false;
 
-        const isImpostor = gameData.impostorIndexes.includes(currentPlayer);
+        if (gameData.gameMode === 'normal') {
+            isImpostor = currentPlayer === gameData.impostorIndex;
+        } else if (gameData.gameMode === 'crazy-innocent') {
+            isImpostor = false;
+        } else if (gameData.gameMode === 'crazy-impostor') {
+            isImpostor = true;
+        }
 
-        if (isImpostor) {
+        // Preparar el contenido según el rol
+        if (isImpostor && gameData.gameMode !== 'crazy-innocent') {
             className = 'role-card';
-            content = `
-                <h3>🎭 IMPOSTOR</h3>
-                <p>¡Eres el impostor!</p>
-                <p>No conoces la palabra secreta</p>
-                <div class="word-display">Tema: ${gameData.selectedTheme}</div>
-            `;
+            if (gameData.gameMode === 'crazy-impostor') {
+                content = `
+                    <h3>🤪 MODO LOCO</h3>
+                    <p>¡Todos son impostores!</p>
+                    <p>Nadie conoce la palabra real</p>
+                    <div class="word-display">Tema: ${gameData.selectedTheme}</div>
+                `;
+            } else {
+                content = `
+                    <h3>🎭 IMPOSTOR</h3>
+                    <p>¡Eres el impostor!</p>
+                    <p>No conoces la palabra secreta</p>
+                    <div class="word-display">Tema: ${gameData.selectedTheme}</div>
+                `;
 
-            if (gameData.giveHint && gameData.impostorHint) {
-                content += `<p><strong>Pista:</strong> ${gameData.impostorHint}</p>`;
+                if (gameData.giveHint && gameData.impostorHint) {
+                    content += `<p><strong>Pista:</strong> ${gameData.impostorHint}</p>`;
+                }
             }
         } else {
             className = 'role-card innocent';
-            content = `
-                <h3>😇 INOCENTE</h3>
-                <p>Conoces la palabra secreta</p>
-                <div class="word-display">${gameData.selectedWord}</div>
-            `;
+            if (gameData.gameMode === 'crazy-innocent') {
+                content = `
+                    <h3>🤪 MODO LOCO</h3>
+                    <p>¡Todos son inocentes!</p>
+                    <p>No hay impostor</p>
+                    <div class="word-display">${gameData.selectedWord}</div>
+                `;
+            } else {
+                content = `
+                    <h3>😇 INOCENTE</h3>
+                    <p>Conoces la palabra secreta</p>
+                    <div class="word-display">${gameData.selectedWord}</div>
+                `;
+            }
 
             if (gameData.showTheme) {
                 content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p>`;
             }
         }
-
-        // Añadir contador de ojos
-        const eyeCount = gameData.playerViews[currentPlayer];
-        content += `
-            <div class="eye-counter">
-                <span class="eye-icon">👁️</span>
-                <span class="eye-number">${eyeCount}</span>
-            </div>
-        `;
     }
 
     // Llenar el contenido del rol
@@ -924,7 +783,6 @@ function revealRoleFixed() {
 
         // Marcar jugador como visto
         viewedPlayers.add(currentSelectedPlayer);
-        updateStartDiscussionButton();
     }, 250);
 }
 
@@ -934,7 +792,6 @@ function updateCurrentPlayer() {
 }
 
 // Crear cuadrícula de jugadores
-// Crear cuadrícula de jugadores
 function createPlayersGrid() {
     const playersGrid = document.getElementById('players-grid');
     playersGrid.innerHTML = '';
@@ -942,37 +799,24 @@ function createPlayersGrid() {
     gameData.players.forEach((player, index) => {
         const playerCard = document.createElement('div');
         playerCard.className = 'player-card';
+        playerCard.textContent = player;
+        playerCard.onclick = () => selectPlayer(player, index);
+
         // Marcar como visto si ya vio su rol
-        const isViewed = viewedPlayers.has(index); // Usar índice para consistencia
-        if (isViewed) {
+        if (viewedPlayers.has(player)) {
             playerCard.classList.add('viewed');
         }
-
-        playerCard.innerHTML = `
-            <div class="player-avatar">👤</div>
-            <div class="player-name">${player}</div>
-            <div class="player-eye-count">👁️ ${gameData.playerViews ? (gameData.playerViews[index] || 0) : 0}</div>
-        `;
-
-        playerCard.onclick = () => selectPlayer(index);
 
         playersGrid.appendChild(playerCard);
     });
 
     // Mostrar botón de iniciar discusión si todos han visto su rol
-    // Usar tamaño de set de índices vistos
-    const startBtn = document.getElementById('start-discussion-btn');
-    if (viewedPlayers.size === gameData.players.length && gameData.players.length > 0) {
-        startBtn.classList.remove('hidden');
-    } else {
-        startBtn.classList.add('hidden');
-    }
+    updateStartDiscussionButton();
 }
 
 // Seleccionar jugador
-function selectPlayer(playerIndex) {
-    const playerName = gameData.players[playerIndex];
-    currentSelectedPlayer = playerIndex; // Usar índice globalmente
+function selectPlayer(playerName, playerIndex) {
+    currentSelectedPlayer = playerName;
     gameData.currentPlayerIndex = playerIndex;
     document.getElementById('selected-player-name').textContent = playerName;
 
@@ -990,75 +834,70 @@ function selectPlayer(playerIndex) {
 }
 
 // Revelar rol al tocar
-// Revelar rol al tocar - Versión Corregida
 function revealRole() {
     const currentPlayer = gameData.currentPlayerIndex;
     const roleContent = document.getElementById('individual-role-content');
     const roleCard = document.getElementById('role-content-display');
     const revealCard = document.querySelector('.role-reveal-card');
 
-    // Incrementar contador de ojos
-    gameData.eyeCount++;
-
-    // Incrementar contador específico del jugador
-    if (!gameData.playerViews) {
-        gameData.playerViews = {};
-    }
-    if (gameData.playerViews[currentPlayer] === undefined) {
-        gameData.playerViews[currentPlayer] = 0;
-    }
-    gameData.playerViews[currentPlayer]++;
-
+    let isImpostor = false;
     let content = '';
-    let className = 'role-card';
 
-    // Manejar modo Roles+ primero
-    if (gameData.gameMode === 'roles-plus') {
-        const rolesPlusResult = generateRolesPlusContent(currentPlayer);
-        content = rolesPlusResult.content;
-        className = rolesPlusResult.className;
-    } else {
-        // Manejar modo Normal
-        const isImpostor = gameData.impostorIndexes.includes(currentPlayer);
+    // Determinar si es impostor según el modo
+    if (gameData.gameMode === 'normal') {
+        isImpostor = currentPlayer === gameData.impostorIndex;
+    } else if (gameData.gameMode === 'crazy-innocent') {
+        isImpostor = false;
+    } else if (gameData.gameMode === 'crazy-impostor') {
+        isImpostor = true;
+    }
 
-        if (isImpostor) {
-            className = 'role-card';
+    // Preparar el contenido según el rol
+    if (isImpostor && gameData.gameMode !== 'crazy-innocent') {
+        roleCard.className = 'role-card';
+        if (gameData.gameMode === 'crazy-impostor') {
+            content = `
+                <h3>🤪 MODO LOCO</h3>
+                <p>¡Todos son impostores!</p>
+                <p>Nadie conoce la palabra real</p>
+                <div class="word-display">Tema: ${gameData.selectedTheme}</div>
+            `;
+        } else {
             content = `
                 <h3>🎭 IMPOSTOR</h3>
                 <p>¡Eres el impostor!</p>
                 <p>No conoces la palabra secreta</p>
                 <div class="word-display">Tema: ${gameData.selectedTheme}</div>
             `;
+
             if (gameData.giveHint && gameData.impostorHint) {
                 content += `<p><strong>Pista:</strong> ${gameData.impostorHint}</p>`;
             }
+        }
+    } else {
+        roleCard.className = 'role-card innocent';
+        if (gameData.gameMode === 'crazy-innocent') {
+            content = `
+                <h3>🤪 MODO LOCO</h3>
+                <p>¡Todos son inocentes!</p>
+                <p>No hay impostor</p>
+                <div class="word-display">${gameData.selectedWord}</div>
+            `;
         } else {
-            className = 'role-card innocent';
             content = `
                 <h3>😇 INOCENTE</h3>
                 <p>Conoces la palabra secreta</p>
                 <div class="word-display">${gameData.selectedWord}</div>
             `;
-            if (gameData.showTheme) {
-                content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p>`;
-            }
         }
 
-        // Añadir contador de ojos
-        const eyeCount = gameData.playerViews[currentPlayer];
-        content += `
-            <div class="eye-counter">
-                <span class="eye-icon">👁️</span>
-                <span class="eye-number">${eyeCount}</span>
-            </div>
-        `;
+        if (gameData.showTheme) {
+            content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p>`;
+        }
     }
 
     // Llenar el contenido del rol
     roleContent.innerHTML = content;
-
-    // Aplicar la clase de rol correcta sin sobrescribir otras clases importantes
-    roleCard.className = `${className} hidden`;
 
     // Iniciar la animación de transición
     revealCard.classList.add('fade-out');
@@ -1070,24 +909,13 @@ function revealRole() {
 
         // Marcar jugador como visto
         viewedPlayers.add(currentSelectedPlayer);
-        updateStartDiscussionButton();
-    }, 250);
+    }, 250); // La mitad del tiempo de transición para un efecto más suave
 }
 
-
-
-// Volver a la selección de jugadores o discusión
+// Volver a la selección de jugadores
 function backToPlayerSelection() {
-    // Si la fase de discusión ya comenzó, volvemos a la pantalla de discusión
-    if (gameData.gamePhase === 'discussion') {
-        showScreen('discussion-screen');
-        // Actualizar la lista de jugadores para reflejar nuevos contadores de ojos
-        setupDiscussion();
-    } else {
-        // Si no, volvemos a la selección de roles inicial
-        showScreen('roles-screen');
-        createPlayersGrid();
-    }
+    showScreen('roles-screen');
+    createPlayersGrid();
 }
 
 // Función antigua mantenida para compatibilidad
@@ -1097,20 +925,6 @@ function nextPlayer() {
 }
 
 function startDiscussion() {
-    // Verificar que todos hayan visto su rol
-    const missingPlayers = [];
-    gameData.players.forEach((player, index) => {
-        const views = gameData.playerViews ? (gameData.playerViews[index] || 0) : 0;
-        if (views === 0) {
-            missingPlayers.push(player);
-        }
-    });
-
-    if (missingPlayers.length > 0) {
-        showColoredAlert(`Faltan jugadores por ver su rol: ${missingPlayers.join(', ')}`, 'warning');
-        return;
-    }
-
     // Seleccionar aleatoriamente quién empieza la discusión
     gameData.discussionStarter = gameData.players[Math.floor(Math.random() * gameData.players.length)];
 
@@ -1120,7 +934,6 @@ function startDiscussion() {
 }
 
 function proceedToDiscussion() {
-    gameData.gamePhase = 'discussion'; // Marcar fase de discusión
     showScreen('discussion-screen');
     setupDiscussion();
     startTimer();
@@ -1144,68 +957,18 @@ function setupDiscussion() {
     const playersDisplay = document.getElementById('players-display');
     playersDisplay.innerHTML = '';
 
-    // Añadir mensaje informativo
-    const infoMsg = document.createElement('p');
-    infoMsg.className = 'role-info';
-    infoMsg.style.margin = '0 0 15px 0';
-    infoMsg.textContent = 'Toca un jugador para volver a ver su rol (esto aumentará su contador de ojos)';
-    playersDisplay.appendChild(infoMsg);
-
     gameData.players.forEach((player, index) => {
         const div = document.createElement('div');
-        div.className = 'player-item interactive'; // Agregar clase para cursor pointer
-        div.style.cursor = 'pointer';
-
-        // Mostrar contador de ojos actual
-        const eyeCount = gameData.playerViews ? (gameData.playerViews[index] || 0) : 0;
-        div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span>${player}</span>
-                <span style="font-size: 0.9em; color: #666;">👁️ ${eyeCount}</span>
-            </div>
-        `;
-
-        div.onclick = () => selectPlayer(index);
+        div.className = 'player-item';
+        div.textContent = player;
         playersDisplay.appendChild(div);
     });
 }
 
-// Función mejorada del temporizador
+// Eliminar temporizador - ahora es tiempo libre
 function startTimer() {
-    const timerDisplay = document.getElementById('timer-display');
-    const discussionTime = gameData.discussionTime || 0;
-
-    if (discussionTime <= 0) {
-        timerDisplay.textContent = '∞';
-        return;
-    }
-
-    let timeLeft = discussionTime * 60; // Convertir a segundos
-
-    // Limpiar temporizador anterior si existe
-    if (gameData.timer) {
-        clearInterval(gameData.timer);
-    }
-
-    // Función para actualizar el display
-    const updateDisplay = () => {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    updateDisplay(); // Mostrar tiempo inicial
-
-    gameData.timer = setInterval(() => {
-        timeLeft--;
-        updateDisplay();
-
-        if (timeLeft <= 0) {
-            clearInterval(gameData.timer);
-            timerDisplay.textContent = "0:00";
-            // Opcional: Sonido o alerta de fin de tiempo
-        }
-    }, 1000);
+    // Ya no hay límite de tiempo
+    document.getElementById('timer-display').textContent = '∞';
 }
 
 function updateTimerDisplay() {
@@ -1223,11 +986,6 @@ function setupVoting() {
     votingOptions.innerHTML = '';
 
     gameData.players.forEach((player, index) => {
-        // Excluir jugadores eliminados
-        if (gameData.eliminatedPlayers.includes(player)) {
-            return;
-        }
-
         const div = document.createElement('div');
         div.className = 'voting-option';
         div.textContent = player;
@@ -1247,8 +1005,54 @@ function selectVote(index, element) {
     selectedVote = index;
 }
 
-// Función displayResults eliminada aquí por duplicación. Se usa la versión más completa al final del archivo.
+// Esta función fue reemplazada por la versión mejorada más abajo
 
+function displayResults() {
+    const resultsContent = document.getElementById('results-content');
+    let content = '';
+
+    // Mostrar la palabra secreta
+    content += `<h3>🔍 La palabra era: <strong>${gameData.selectedWord}</strong></h3>`;
+    content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p><br>`;
+
+    // Mostrar quién era el impostor
+    if (gameData.gameMode === 'normal') {
+        const impostorName = gameData.players[gameData.impostorIndex];
+        content += `<p>🎭 <strong>El impostor era:</strong> ${impostorName}</p><br>`;
+
+        // Determinar ganador
+        if (selectedVote === gameData.impostorIndex) {
+            content += `<div class="winner-announcement innocent-win">
+                🎉 ¡Los inocentes ganaron!<br>
+                Descubrieron al impostor correctamente
+            </div>`;
+        } else if (selectedVote === -1) {
+            content += `<div class="winner-announcement">
+                🤷‍♂️ No hubo votación<br>
+                El impostor se salvó por falta de consenso
+            </div>`;
+        } else {
+            const votedPlayer = gameData.players[selectedVote];
+            content += `<div class="winner-announcement impostor-win">
+                🎭 ¡El impostor ganó!<br>
+                Votaron por ${votedPlayer} (inocente)
+            </div>`;
+        }
+    } else if (gameData.gameMode === 'crazy-innocent') {
+        content += `<p>🤪 <strong>Modo Loco:</strong> ¡Todos eran inocentes!</p>`;
+        content += `<div class="winner-announcement innocent-win">
+            🎉 ¿Se dieron cuenta de que no había impostor?
+        </div>`;
+    } else if (gameData.gameMode === 'crazy-impostor') {
+        content += `<p>🤪 <strong>Modo Loco:</strong> ¡Todos eran impostores!</p>`;
+        content += `<div class="winner-announcement impostor-win">
+            🎭 Nadie conocía la palabra real<br>
+            ¿Lograron fingir bien?
+        </div>`;
+    }
+
+    resultsContent.innerHTML = content;
+}
 
 function resetGame() {
     gameData.players = [];
@@ -1257,7 +1061,6 @@ function resetGame() {
     gameData.selectedTheme = '';
     gameData.impostorIndex = -1;
     gameData.gameMode = 'normal';
-    gameData.gamePhase = 'setup'; // Resetear fase del juego
     gameData.showTheme = false;
     gameData.giveHint = false;
     gameData.roundType = 'elimination';
@@ -1305,9 +1108,7 @@ function saveCurrentSettings() {
         showTheme: document.getElementById('show-theme').checked,
         giveHint: document.getElementById('give-hint').checked,
         specialMode: document.getElementById('special-mode').value,
-        specialMode: document.getElementById('special-mode').value,
         roundType: document.getElementById('round-type').value,
-        discussionTime: parseInt(document.getElementById('discussion-time') ? document.getElementById('discussion-time').value : 0),
         playerNames: []
     };
 
@@ -1328,12 +1129,6 @@ function loadPreviousSettings() {
         document.getElementById('give-hint').checked = gameData.lastSettings.giveHint;
         document.getElementById('special-mode').value = gameData.lastSettings.specialMode;
         document.getElementById('round-type').value = gameData.lastSettings.roundType;
-
-        // Cargar tiempo de discusión si existe input y dato
-        const timeInput = document.getElementById('discussion-time');
-        if (timeInput && gameData.lastSettings.discussionTime !== undefined) {
-            timeInput.value = gameData.lastSettings.discussionTime;
-        }
     }
 }
 
@@ -3304,9 +3099,421 @@ function generateSmartHint(selectedWord, theme) {
     return generateAdvancedHint(selectedWord, theme);
 }
 
-// Función antigua para mantener compatibilidad
-// Función antigua eliminada para reducir duplicación
+// Función para generar palabras tabú para el Ayudante en modo Roles+
+function generateTabooWords(selectedWord, theme) {
+    const tabooCategories = {
+        animales: {
+            'Perro': ['mascota', 'ladrar', 'hueso'],
+            'Gato': ['maullar', 'ratón', 'felino'],
+            'León': ['rey', 'melena', 'rugir'],
+            'Elefante': ['trompa', 'marfil', 'gigante'],
+            'Tigre': ['rayas', 'felino', 'naranja'],
+            'Oso': ['miel', 'hibernar', 'peludo'],
+            'Lobo': ['manada', 'aullar', 'feroz'],
+            'Zorro': ['astuto', 'cola', 'rojo']
+        },
+        comida: {
+            'Pizza': ['masa', 'queso', 'italiano'],
+            'Hamburguesa': ['carne', 'pan', 'americana'],
+            'Sushi': ['pescado', 'arroz', 'japonés'],
+            'Pasta': ['trigo', 'salsa', 'italiano'],
+            'Tacos': ['tortilla', 'mexicano', 'picante'],
+            'Chocolate': ['cacao', 'dulce', 'marrón'],
+            'Helado': ['frío', 'cremoso', 'verano']
+        },
+        deportes: {
+            'Fútbol': ['balón', 'gol', 'once'],
+            'Baloncesto': ['canasta', 'driblar', 'alto'],
+            'Tenis': ['raqueta', 'pelota', 'red'],
+            'Natación': ['agua', 'piscina', 'brazada'],
+            'Golf': ['hoyo', 'palo', 'verde'],
+            'Boxeo': ['guantes', 'ring', 'golpear']
+        },
+        peliculas: {
+            'Titanic': ['barco', 'iceberg', 'hundirse'],
+            'Avatar': ['azul', 'planeta', 'aliens'],
+            'Matrix': ['realidad', 'píldora', 'virtual'],
+            'Frozen': ['hielo', 'hermanas', 'cantar']
+        },
+        paises: {
+            'España': ['ibérica', 'flamenco', 'paella'],
+            'Francia': ['torre', 'queso', 'vino'],
+            'Italia': ['bota', 'pasta', 'romano'],
+            'Japón': ['sol', 'sushi', 'samurai'],
+            'México': ['azteca', 'tequila', 'sombrero']
+        },
+        profesiones: {
+            'Médico': ['hospital', 'curar', 'estetoscopio'],
+            'Profesor': ['enseñar', 'escuela', 'estudiantes'],
+            'Chef': ['cocinar', 'restaurante', 'recetas'],
+            'Piloto': ['volar', 'avión', 'cielo']
+        },
+        colores: {
+            'Rojo': ['sangre', 'fuego', 'rosa'],
+            'Azul': ['cielo', 'mar', 'frío'],
+            'Verde': ['hierba', 'naturaleza', 'esperanza'],
+            'Amarillo': ['sol', 'oro', 'limón']
+        },
+        objetos: {
+            'Teléfono': ['llamar', 'móvil', 'comunicar'],
+            'Libro': ['leer', 'páginas', 'historia'],
+            'Reloj': ['tiempo', 'horas', 'puntual'],
+            'Coche': ['conducir', 'ruedas', 'motor']
+        }
+    };
 
+    // Obtener palabras tabú específicas para la palabra
+    if (tabooCategories[theme] && tabooCategories[theme][selectedWord]) {
+        return tabooCategories[theme][selectedWord];
+    }
+
+    // Palabras tabú genéricas si no hay específicas
+    return ['obvio', 'directo', 'fácil'];
+}
+
+// Función antigua para mantener compatibilidad
+function generateOldSmartHint(selectedWord, theme) {
+    // Definir categorías específicas para cada tema con pistas relacionadas pero no obvias
+    const hintCategories = {
+        animales: {
+            // Mamíferos terrestres
+            'Perro': ['Gato', 'Lobo'], 'Gato': ['Perro', 'León'], 'León': ['Tigre', 'Jaguar'],
+            'Elefante': ['Rinoceronte', 'Hipopótamo'], 'Tigre': ['León', 'Leopardo'], 'Oso': ['Lobo', 'Zorro'],
+            'Lobo': ['Perro', 'Zorro'], 'Zorro': ['Lobo', 'Mapache'], 'Conejo': ['Ardilla', 'Mapache'],
+            'Panda': ['Oso', 'Koala'], 'Jirafa': ['Elefante', 'Cebra'], 'Zebra': ['Caballo', 'Jirafa'],
+            'Hipopótamo': ['Elefante', 'Rinoceronte'], 'Rinoceronte': ['Hipopótamo', 'Elefante'],
+            'Canguro': ['Koala', 'Lemur'], 'Ardilla': ['Conejo', 'Castor'], 'Castor': ['Ardilla', 'Mapache'],
+            'Mapache': ['Zorro', 'Castor'], 'Koala': ['Panda', 'Lemur'], 'Lemur': ['Mono', 'Koala'],
+            'Jaguar': ['León', 'Leopardo'], 'Leopardo': ['Tigre', 'Guepardo'], 'Guepardo': ['Leopardo', 'Jaguar'],
+            'Cabra': ['Oveja', 'Llama'], 'Oveja': ['Cabra', 'Llama'], 'Cerdo': ['Vaca', 'Cabra'],
+            'Vaca': ['Caballo', 'Cerdo'], 'Caballo': ['Burro', 'Zebra'], 'Burro': ['Caballo', 'Llama'],
+            'Llama': ['Camello', 'Cabra'], 'Camello': ['Llama', 'Jirafa'], 'Mono': ['Gorila', 'Chimpancé'],
+            'Gorila': ['Chimpancé', 'Mono'], 'Chimpancé': ['Gorila', 'Mono'],
+
+            // Aves
+            'Águila': ['Búho', 'Flamenco'], 'Búho': ['Águila', 'Murciélago'], 'Flamenco': ['Pingüino', 'Águila'],
+            'Pingüino': ['Flamenco', 'Colibrí'], 'Colibrí': ['Mariposa', 'Libélula'], 'Murciélago': ['Búho', 'Araña'],
+
+            // Marinos
+            'Serpiente': ['Lagarto', 'Araña'], 'Tortuga': ['Caracol', 'Cangrejo'], 'Delfín': ['Ballena', 'Tiburón'],
+            'Ballena': ['Delfín', 'Tiburón'], 'Tiburón': ['Delfín', 'Pulpo'], 'Pulpo': ['Tiburón', 'Medusa'],
+
+            // Insectos
+            'Mariposa': ['Libélula', 'Colibrí'], 'Abeja': ['Hormiga', 'Araña'], 'Araña': ['Abeja', 'Serpiente'],
+            'Hormiga': ['Abeja', 'Escarabajo'], 'Libélula': ['Mariposa', 'Colibrí']
+        },
+
+        comida: {
+            // Comida rápida/principal
+            'Pizza': ['Pasta', 'Lasaña'], 'Hamburguesa': ['Tacos', 'Empanadas'], 'Tacos': ['Empanadas', 'Hamburguesa'],
+            'Pasta': ['Pizza', 'Lasaña'], 'Pollo': ['Pescado', 'Carne'], 'Pescado': ['Sushi', 'Ceviche'],
+            'Lasaña': ['Pizza', 'Pasta'], 'Paella': ['Arroz', 'Risotto'], 'Empanadas': ['Tacos', 'Hamburguesa'],
+            'Ceviche': ['Sushi', 'Pescado'], 'Ramen': ['Sopa', 'Fideos'], 'Curry': ['Especias', 'Picante'],
+
+            // Postres/dulces
+            'Helado': ['Sorbete', 'Granizado'], 'Chocolate': ['Cacao', 'Brownie'], 'Donut': ['Muffin', 'Croissant'],
+            'Brownie': ['Chocolate', 'Cookies'], 'Cookies': ['Galletas', 'Brownie'], 'Tiramisú': ['Cheesecake', 'Postre'],
+            'Cheesecake': ['Tarta', 'Tiramisú'], 'Macarons': ['Cookies', 'Dulces'], 'Churros': ['Donut', 'Dulces'],
+            'Flan': ['Pudín', 'Gelatina'], 'Gelatina': ['Flan', 'Pudín'],
+
+            // Desayuno/panadería
+            'Pan': ['Tostada', 'Bagel'], 'Croissant': ['Pan', 'Muffin'], 'Bagel': ['Pan', 'Donut'],
+            'Muffin': ['Cupcake', 'Croissant'], 'Pancakes': ['Waffles', 'Crepes'], 'Waffles': ['Pancakes', 'Crepes'],
+            'Crepes': ['Pancakes', 'Tortilla'], 'Tortilla': ['Crepes', 'Huevos'],
+
+            // Bebidas
+            'Café': ['Té', 'Cappuccino'], 'Té': ['Infusión', 'Café'], 'Smoothie': ['Batido', 'Zumo'],
+            'Milkshake': ['Batido', 'Smoothie'], 'Limonada': ['Refresco', 'Zumo'], 'Sangría': ['Vino', 'Cóctel'],
+            'Mojito': ['Cóctel', 'Margarita'], 'Margarita': ['Cóctel', 'Mojito'], 'Piña Colada': ['Cóctel', 'Tropical'],
+            'Cappuccino': ['Café', 'Latte'],
+
+            // Otros
+            'Sushi': ['Pescado', 'Japonés'], 'Ensalada': ['Verduras', 'Fresca'], 'Arroz': ['Cereal', 'Paella'],
+            'Queso': ['Lácteo', 'Cremoso'], 'Fruta': ['Natural', 'Dulce'], 'Verduras': ['Ensalada', 'Natural'],
+            'Falafel': ['Hummus', 'Árabe'], 'Hummus': ['Falafel', 'Cremoso'], 'Gazpacho': ['Sopa', 'Frío']
+        },
+
+        deportes: {
+            // Deportes de pelota
+            'Fútbol': ['Baloncesto', 'Voleibol'], 'Baloncesto': ['Voleibol', 'Fútbol'], 'Tenis': ['Ping-pong', 'Bádminton'],
+            'Voleibol': ['Fútbol', 'Baloncesto'], 'Béisbol': ['Softball', 'Cricket'], 'Golf': ['Tenis', 'Precisión'],
+            'Hockey': ['Patinaje', 'Stick'], 'Rugby': ['Fútbol', 'Contacto'],
+
+            // Deportes acuáticos
+            'Natación': ['Buceo', 'Surf'], 'Surf': ['Natación', 'Olas'],
+
+            // Deportes de combate
+            'Boxeo': ['Karate', 'Lucha'], 'Karate': ['Judo', 'Taekwondo'], 'Judo': ['Karate', 'Lucha'],
+            'Taekwondo': ['Karate', 'Patadas'], 'Esgrima': ['Espada', 'Duelo'],
+
+            // Atletismo
+            'Atletismo': ['Running', 'Pista'], 'Running': ['Maratón', 'Correr'], 'Maratón': ['Running', 'Resistencia'],
+            'Salto Alto': ['Salto Largo', 'Altura'], 'Salto Largo': ['Salto Alto', 'Distancia'],
+            'Lanzamiento': ['Jabalina', 'Disco'], 'Jabalina': ['Lanzamiento', 'Punta'], 'Disco': ['Lanzamiento', 'Circular'],
+            'Martillo': ['Lanzamiento', 'Peso'], 'Bala': ['Peso', 'Lanzamiento'], 'Vallas': ['Obstáculos', 'Salto'],
+            'Relevos': ['Equipo', 'Testigo'], 'Marcha': ['Caminar', 'Ritmo'],
+
+            // Deportes de invierno
+            'Esquí': ['Snowboard', 'Nieve'], 'Snowboard': ['Esquí', 'Tabla'], 'Patinaje': ['Hielo', 'Deslizar'],
+
+            // Otros deportes
+            'Ciclismo': ['Bicicleta', 'Pedales'], 'Escalada': ['Montaña', 'Altura'], 'Gimnasia': ['Flexibilidad', 'Acrobacia'],
+            'Halterofilia': ['Pesas', 'Fuerza'], 'Crossfit': ['Intenso', 'Variado'], 'Yoga': ['Relajación', 'Estiramiento'],
+            'Pilates': ['Yoga', 'Core'], 'Zumba': ['Baile', 'Ritmo'], 'Aeróbicos': ['Cardio', 'Ritmo'],
+            'Spinning': ['Bicicleta', 'Intenso'], 'Triatlón': ['Tres', 'Resistencia'], 'Pentatlón': ['Cinco', 'Variado'],
+            'Decatlón': ['Diez', 'Completo'], 'Arquería': ['Arco', 'Precisión'], 'Skateboard': ['Tabla', 'Trucos'],
+            'BMX': ['Bicicleta', 'Trucos'], 'Motocross': ['Moto', 'Saltos'], 'Automovilismo': ['Coche', 'Velocidad'],
+            'Karting': ['Kart', 'Pista']
+        },
+
+        peliculas: {
+            // Clásicos/Drama
+            'Titanic': ['Romance', 'Barco'], 'Avatar': ['Ciencia ficción', 'Azul'], 'Matrix': ['Realidad virtual', 'Acción'],
+
+            // Superhéroes
+            'Marvel': ['Superhéroes', 'Cómics'], 'Batman': ['Superman', 'Gotham'], 'Superman': ['Batman', 'Krypton'],
+            'Spider-Man': ['Arañas', 'Nueva York'], 'Star Wars': ['Espacio', 'Jedis'],
+
+            // Fantasía/Magia
+            'Harry Potter': ['Magia', 'Hogwarts'], 'Jurassic Park': ['Dinosaurios', 'Isla'],
+
+            // Animación Disney/Pixar
+            'Frozen': ['Hielo', 'Hermanas'], 'Toy Story': ['Juguetes', 'Buzz'], 'Shrek': ['Ogro', 'Pantano'],
+            'Cars': ['Coches', 'Rayo'], 'Minions': ['Amarillo', 'Gru'], 'El Rey León': ['Simba', 'Sabana'],
+            'Buscando a Nemo': ['Pez', 'Océano'], 'Monsters Inc': ['Monstruos', 'Sustos'], 'Up': ['Globos', 'Casa'],
+            'Wall-E': ['Robot', 'Basura'], 'Coco': ['Día de muertos', 'Música'], 'Moana': ['Océano', 'Isla'],
+            'Encanto': ['Magia', 'Familia'], 'Rapunzel': ['Cabello', 'Torre'], 'La Sirenita': ['Mar', 'Sirena'],
+            'Cenicienta': ['Zapato', 'Medianoche'], 'Blancanieves': ['Manzana', 'Enanitos'], 'Bella y Bestia': ['Rosa', 'Castillo'],
+            'Aladdin': ['Genio', 'Lámpara'], 'Mulan': ['Guerrera', 'China'], 'Pocahontas': ['Naturaleza', 'Indígena'],
+            'Hércules': ['Fuerza', 'Grecia'], 'Tarzan': ['Selva', 'Simios'], 'Bambi': ['Ciervo', 'Bosque'],
+            'Dumbo': ['Elefante', 'Orejas'], 'Pinocho': ['Marioneta', 'Nariz'], 'Peter Pan': ['Volar', 'Nunca'],
+            'Alice': ['Conejo', 'Maravillas'], 'Robin Hood': ['Arquero', 'Bosque']
+        },
+
+        paises: {
+            // Europa
+            'España': ['Portugal', 'Francia'], 'Francia': ['España', 'Italia'], 'Italia': ['Francia', 'Grecia'],
+            'Alemania': ['Austria', 'Suiza'], 'Portugal': ['España', 'Atlántico'], 'Holanda': ['Bélgica', 'Tulipanes'],
+            'Bélgica': ['Holanda', 'Francia'], 'Suiza': ['Austria', 'Montañas'], 'Austria': ['Alemania', 'Suiza'],
+            'Suecia': ['Noruega', 'Finlandia'], 'Noruega': ['Suecia', 'Fiordos'], 'Dinamarca': ['Suecia', 'Vikingos'],
+            'Finlandia': ['Suecia', 'Frío'], 'Islandia': ['Volcanes', 'Hielo'], 'Irlanda': ['Verde', 'Trébol'],
+            'Grecia': ['Italia', 'Islas'], 'Turquía': ['Grecia', 'Puente'], 'Reino Unido': ['Islas', 'Té'],
+
+            // América
+            'Brasil': ['Argentina', 'Samba'], 'Argentina': ['Brasil', 'Tango'], 'México': ['Tacos', 'Azteca'],
+            'Estados Unidos': ['Canadá', 'Libertad'], 'Canadá': ['Estados Unidos', 'Maple'],
+
+            // Asia
+            'Japón': ['China', 'Sushi'], 'China': ['Japón', 'Muralla'], 'India': ['Curry', 'Taj'],
+            'Rusia': ['Grande', 'Frío'], 'Tailandia': ['Vietnam', 'Templos'], 'Vietnam': ['Tailandia', 'Pho'],
+            'Indonesia': ['Islas', 'Volcanes'], 'Filipinas': ['Islas', 'Tropical'], 'Malasia': ['Singapur', 'Torres'],
+            'Singapur': ['Malasia', 'Ciudad'], 'Corea del Sur': ['Japón', 'K-pop'], 'Mongolia': ['Caballos', 'Estepa'],
+            'Nepal': ['Montañas', 'Everest'], 'Bangladesh': ['India', 'Delta'], 'Pakistán': ['India', 'Cricket'],
+            'Afganistán': ['Montañas', 'Historia'], 'Irán': ['Persia', 'Petróleo'], 'Irak': ['Mesopotamia', 'Tigris'],
+
+            // África/Oceanía
+            'Australia': ['Canguros', 'Oceanía'], 'Egipto': ['Pirámides', 'Nilo'], 'Marruecos': ['Desierto', 'Casablanca'],
+            'Sudáfrica': ['Safari', 'Diamantes'], 'Nigeria': ['Petróleo', 'Nollywood'], 'Kenia': ['Safari', 'Masai'],
+            'Ghana': ['Oro', 'Cacao'], 'Etiopía': ['Café', 'Lucy'], 'Madagascar': ['Isla', 'Lemures']
+        },
+
+        profesiones: {
+            // Salud
+            'Médico': ['Enfermero', 'Cirujano'], 'Enfermero': ['Médico', 'Cuidados'], 'Dentista': ['Dientes', 'Sonrisa'],
+            'Veterinario': ['Animales', 'Cuidados'], 'Cirujano': ['Operaciones', 'Bisturí'], 'Pediatra': ['Niños', 'Médico'],
+            'Cardiólogo': ['Corazón', 'Médico'], 'Neurólogo': ['Cerebro', 'Nervios'], 'Dermatólogo': ['Piel', 'Médico'],
+            'Farmacéutico': ['Medicinas', 'Recetas'], 'Fisioterapeuta': ['Rehabilitación', 'Ejercicios'],
+            'Psicólogo': ['Mente', 'Terapia'], 'Psiquiatra': ['Psicólogo', 'Medicamentos'], 'Nutricionista': ['Dieta', 'Salud'],
+
+            // Educación/Arte
+            'Profesor': ['Enseñar', 'Estudiantes'], 'Artista': ['Creatividad', 'Pintura'], 'Músico': ['Instrumentos', 'Melodía'],
+            'Escritor': ['Libros', 'Palabras'], 'Actor': ['Teatro', 'Personajes'], 'Cantante': ['Voz', 'Canciones'],
+            'Bailarín': ['Danza', 'Ritmo'], 'Director': ['Cine', 'Acción'], 'Productor': ['Director', 'Dinero'],
+            'Guionista': ['Escritor', 'Diálogos'], 'Editor': ['Textos', 'Corrección'], 'Traductor': ['Idiomas', 'Palabras'],
+
+            // Técnico/Servicios
+            'Ingeniero': ['Construcción', 'Cálculos'], 'Arquitecto': ['Edificios', 'Planos'], 'Programador': ['Código', 'Computadoras'],
+            'Diseñador': ['Creatividad', 'Visual'], 'Fotógrafo': ['Cámara', 'Imágenes'], 'Periodista': ['Noticias', 'Escribir'],
+
+            // Seguridad/Emergencias
+            'Bombero': ['Fuego', 'Rescate'], 'Policía': ['Seguridad', 'Orden'], 'Piloto': ['Avión', 'Volar'],
+
+            // Legal/Negocios
+            'Abogado': ['Leyes', 'Justicia'], 'Chef': ['Cocina', 'Sabores'], 'Entrenador': ['Deportes', 'Ejercicio'],
+
+            // Belleza/Cuidado
+            'Estilista': ['Cabello', 'Belleza'], 'Barbero': ['Estilista', 'Hombres'], 'Maquillador': ['Belleza', 'Rostro'],
+            'Masajista': ['Relajación', 'Músculos']
+        },
+
+        colores: {
+            // Colores primarios y básicos
+            'Rojo': ['Carmesí', 'Escarlata'], 'Azul': ['Celeste', 'Marino'], 'Verde': ['Esmeralda', 'Lima'],
+            'Amarillo': ['Dorado', 'Mostaza'], 'Naranja': ['Coral', 'Salmón'], 'Morado': ['Violeta', 'Lila'],
+            'Rosa': ['Fucsia', 'Salmón'], 'Negro': ['Gris', 'Oscuro'], 'Blanco': ['Crema', 'Marfil'],
+            'Gris': ['Plateado', 'Negro'], 'Marrón': ['Caoba', 'Chocolate'],
+
+            // Tonos específicos
+            'Turquesa': ['Aguamarina', 'Celeste'], 'Violeta': ['Morado', 'Lila'], 'Dorado': ['Amarillo', 'Ámbar'],
+            'Plateado': ['Gris', 'Metálico'], 'Beige': ['Crema', 'Arena'], 'Crema': ['Beige', 'Marfil'],
+            'Marfil': ['Blanco', 'Crema'], 'Coral': ['Naranja', 'Salmón'], 'Salmón': ['Rosa', 'Coral'],
+            'Fucsia': ['Rosa', 'Magenta'], 'Magenta': ['Fucsia', 'Rosa'], 'Carmesí': ['Rojo', 'Granate'],
+            'Escarlata': ['Rojo', 'Bermellón'], 'Bermellón': ['Rojo', 'Naranja'], 'Granate': ['Rojo', 'Burdeos'],
+            'Burdeos': ['Granate', 'Vino'], 'Vino': ['Burdeos', 'Rojo'], 'Cereza': ['Rojo', 'Frambuesa'],
+            'Frambuesa': ['Rosa', 'Cereza'], 'Lavanda': ['Lila', 'Morado'], 'Lila': ['Violeta', 'Lavanda'],
+            'Índigo': ['Azul', 'Añil'], 'Añil': ['Índigo', 'Azul'], 'Cobalto': ['Azul', 'Intenso'],
+            'Marino': ['Azul', 'Oscuro'], 'Celeste': ['Azul', 'Cielo'], 'Cielo': ['Celeste', 'Azul'],
+            'Aguamarina': ['Turquesa', 'Verde'], 'Esmeralda': ['Verde', 'Jade'], 'Jade': ['Verde', 'Esmeralda'],
+            'Oliva': ['Verde', 'Marrón'], 'Lima': ['Verde', 'Amarillo'], 'Menta': ['Verde', 'Fresco'],
+            'Pistacho': ['Verde', 'Claro'], 'Mostaza': ['Amarillo', 'Marrón'], 'Ámbar': ['Dorado', 'Naranja'],
+            'Ocre': ['Marrón', 'Amarillo'], 'Caoba': ['Marrón', 'Rojo'], 'Chocolate': ['Marrón', 'Dulce']
+        },
+
+        objetos: {
+            // Tecnología
+            'Teléfono': ['Comunicación', 'Móvil'], 'Computadora': ['Tecnología', 'Pantalla'], 'Televisión': ['Pantalla', 'Programas'],
+
+            // Muebles
+            'Silla': ['Mesa', 'Sentarse'], 'Mesa': ['Silla', 'Superficie'], 'Cama': ['Dormir', 'Colchón'],
+            'Espejo': ['Reflejo', 'Cristal'], 'Lámpara': ['Luz', 'Iluminar'], 'Ventana': ['Puerta', 'Cristal'],
+            'Puerta': ['Ventana', 'Entrada'],
+
+            // Transporte
+            'Coche': ['Bicicleta', 'Motor'], 'Bicicleta': ['Coche', 'Pedales'],
+
+            // Accesorios/Ropa
+            'Reloj': ['Tiempo', 'Pulsera'], 'Gafas': ['Vista', 'Cristales'], 'Sombrero': ['Cabeza', 'Sol'],
+            'Zapatos': ['Pies', 'Caminar'], 'Camisa': ['Pantalón', 'Torso'], 'Pantalón': ['Camisa', 'Piernas'],
+            'Chaqueta': ['Abrigo', 'Frío'], 'Bufanda': ['Cuello', 'Calor'], 'Guantes': ['Manos', 'Frío'],
+            'Calcetines': ['Pies', 'Zapatos'], 'Cinturón': ['Pantalón', 'Cintura'],
+
+            // Joyería
+            'Collar': ['Cuello', 'Joya'], 'Pulsera': ['Muñeca', 'Joya'], 'Anillo': ['Dedo', 'Joya'],
+            'Pendientes': ['Orejas', 'Joya'],
+
+            // Higiene/Cuidado
+            'Perfume': ['Olor', 'Fragancia'], 'Champú': ['Cabello', 'Lavar'], 'Jabón': ['Limpiar', 'Espuma'],
+            'Toalla': ['Secar', 'Baño'], 'Cepillo': ['Cabello', 'Peinar'], 'Peine': ['Cepillo', 'Cabello'],
+
+            // Herramientas
+            'Tijeras': ['Cortar', 'Hojas'], 'Martillo': ['Clavo', 'Golpear'], 'Destornillador': ['Tornillo', 'Girar'],
+            'Taladro': ['Agujero', 'Perforar'], 'Sierra': ['Cortar', 'Madera'], 'Clavo': ['Martillo', 'Fijar'],
+            'Tornillo': ['Destornillador', 'Rosca'], 'Tuerca': ['Tornillo', 'Rosca'],
+
+            // Escritorio/Oficina
+            'Libro': ['Leer', 'Páginas'], 'Bolígrafo': ['Escribir', 'Tinta'], 'Lápiz': ['Escribir', 'Grafito'],
+            'Cuaderno': ['Escribir', 'Hojas'], 'Mochila': ['Cargar', 'Espalda'], 'Maleta': ['Viaje', 'Ropa'],
+
+            // Otros
+            'Paraguas': ['Lluvia', 'Proteger'], 'Llave': ['Puerta', 'Abrir']
+        }
+    };
+
+    // Sistema de pistas expandido para las nuevas categorías
+    const expandedHints = {
+        musica: {
+            'Rock': ['Pop', 'Metal'], 'Pop': ['Rock', 'Baile'], 'Jazz': ['Blues', 'Soul'], 'Blues': ['Jazz', 'Rock'],
+            'Country': ['Folk', 'Rural'], 'Folk': ['Country', 'Acústico'], 'Reggae': ['Ska', 'Jamaica'],
+            'Hip Hop': ['Rap', 'Urbano'], 'Rap': ['Hip Hop', 'Rimas'], 'R&B': ['Soul', 'Funk'],
+            'Soul': ['R&B', 'Gospel'], 'Funk': ['Soul', 'Ritmo'], 'Disco': ['Funk', 'Baile'],
+            'House': ['Techno', 'Electrónico'], 'Techno': ['House', 'Electrónico'], 'Trance': ['Techno', 'Hipnótico'],
+            'Dubstep': ['Electrónico', 'Bajo'], 'EDM': ['Electrónico', 'Baile'], 'Ambient': ['Relajante', 'Atmosférico'],
+            'Classical': ['Orquesta', 'Sinfonía'], 'Opera': ['Clásica', 'Vocal'], 'Symphony': ['Clásica', 'Orquesta'],
+            'Flamenco': ['Español', 'Guitarra'], 'Tango': ['Argentino', 'Baile'], 'Salsa': ['Latino', 'Baile'],
+            'Punk': ['Rock', 'Rebelde'], 'Metal': ['Rock', 'Pesado'], 'Grunge': ['Rock', 'Alternativo'],
+            'Alternative': ['Indie', 'Rock'], 'Indie': ['Alternativo', 'Independiente'], 'Reggaeton': ['Latino', 'Urbano'],
+            'Piano': ['Teclado', 'Teclas'], 'Guitarra': ['Cuerdas', 'Acorde'], 'Violín': ['Cuerdas', 'Arco'],
+            'Violonchelo': ['Cuerdas', 'Grande'], 'Contrabajo': ['Cuerdas', 'Grave'], 'Viola': ['Violín', 'Medio'],
+            'Arpa': ['Cuerdas', 'Ángel'], 'Flauta': ['Viento', 'Soplar'], 'Clarinete': ['Viento', 'Madera'],
+            'Saxofón': ['Viento', 'Jazz'], 'Trompeta': ['Viento', 'Metal'], 'Trombón': ['Viento', 'Deslizar'],
+            'Batería': ['Percusión', 'Ritmo'], 'Percusión': ['Batería', 'Golpear'], 'Xilófono': ['Percusión', 'Madera'],
+            'Acordeón': ['Viento', 'Fuelle'], 'Armónica': ['Viento', 'Pequeña'], 'Banjo': ['Cuerdas', 'Country'],
+            'Ukelele': ['Cuerdas', 'Hawái'], 'Gaita': ['Viento', 'Escocia'], 'Castañuelas': ['Percusión', 'España']
+        },
+
+        tecnologia: {
+            'Teléfono Inteligente': ['Móvil', 'Teléfono'], 'Tableta': ['iPad', 'Pantalla'], 'Portátil': ['Ordenador', 'Computadora'],
+            'Ordenador de Mesa': ['PC', 'Torre'], 'Monitor': ['Pantalla', 'Visualizar'], 'Teclado': ['Escribir', 'Teclas'],
+            'Ratón': ['Cursor', 'Clic'], 'Cámara Web': ['Cámara', 'Vídeo'], 'Auriculares': ['Sonido', 'Oído'],
+            'Altavoces': ['Sonido', 'Audio'], 'Micrófono': ['Grabar', 'Voz'], 'Impresora': ['Papel', 'Imprimir'],
+            'Enrutador': ['WiFi', 'Internet'], 'Módem': ['Internet', 'Conexión'], 'USB': ['Puerto', 'Conectar'],
+            'Bluetooth': ['Inalámbrico', 'Conectar'], 'WiFi': ['Inalámbrico', 'Internet'], '5G': ['Red', 'Rápido'],
+            'GPS': ['Ubicación', 'Mapa'], 'NFC': ['Contacto', 'Pago'], 'Código QR': ['Código', 'Escanear'],
+            'Inteligencia Artificial': ['IA', 'Robot'], 'Aprendizaje Automático': ['Aprender', 'Algoritmo'],
+            'Macrodatos': ['Datos', 'Análisis'], 'Computación en la Nube': ['Nube', 'Servidor'], 'Internet de las Cosas': ['Conectado', 'Inteligente'],
+            'Cadena de Bloques': ['Cadena', 'Cripto'], 'Bitcoin': ['Cripto', 'Digital'], 'Token No Fungible': ['Digital', 'Único'],
+            'Realidad Virtual': ['Virtual', 'Gafas'], 'Realidad Aumentada': ['Aumentada', 'Realidad'], 'Dron': ['Volar', 'Control'],
+            'Robot': ['Automático', 'Máquina'], 'Reloj Inteligente': ['Reloj', 'Inteligente'], 'Televisión Inteligente': ['Televisión', 'Internet'],
+            'Transmisión en Directo': ['Vídeo', 'En Línea'], 'Podcast': ['Audio', 'Episodio'], 'YouTube': ['Vídeo', 'Google'],
+            'Instagram': ['Fotos', 'Social'], 'Facebook': ['Social', 'Meta'], 'WhatsApp': ['Mensajes', 'Chat'],
+            'Zoom': ['Vídeo', 'Llamada'], 'Netflix': ['Series', 'Streaming'], 'Spotify': ['Música', 'Streaming'],
+            'PlayStation': ['Consola', 'Sony'], 'Xbox': ['Consola', 'Microsoft'], 'Nintendo': ['Consola', 'Mario'],
+            'Ciberseguridad': ['Seguridad', 'Hacker'], 'Cortafuegos': ['Protección', 'Red'], 'Red Privada Virtual': ['Privado', 'Red']
+        },
+
+        naturaleza: {
+            'Montaña': ['Pico', 'Alto'], 'Valle': ['Bajo', 'Entre'], 'Río': ['Agua', 'Corriente'],
+            'Lago': ['Agua', 'Tranquilo'], 'Mar': ['Océano', 'Sal'], 'Océano': ['Mar', 'Grande'],
+            'Playa': ['Arena', 'Costa'], 'Desierto': ['Arena', 'Seco'], 'Bosque': ['Árboles', 'Verde'],
+            'Selva': ['Tropical', 'Densa'], 'Pradera': ['Hierba', 'Llano'], 'Tundra': ['Frío', 'Ártico'],
+            'Sabana': ['África', 'Hierba'], 'Pantano': ['Húmedo', 'Agua'], 'Arrecife': ['Coral', 'Mar'],
+            'Isla': ['Agua', 'Rodeada'], 'Volcán': ['Lava', 'Erupción'], 'Cueva': ['Oscura', 'Roca'],
+            'Cañón': ['Profundo', 'Roca'], 'Glaciar': ['Hielo', 'Frío'], 'Cascada': ['Agua', 'Caer'],
+            'Roble': ['Fuerte', 'Bellota'], 'Pino': ['Aguja', 'Verde'], 'Abeto': ['Navidad', 'Cono'],
+            'Cedro': ['Aromático', 'Madera'], 'Eucalipto': ['Koala', 'Medicinal'], 'Sauce': ['Llorar', 'Flexible'],
+            'Palmera': ['Tropical', 'Coco'], 'Bambú': ['Flexible', 'Asia'], 'Secuoya': ['Gigante', 'California'],
+            'Baobab': ['África', 'Grueso'], 'Cerezo': ['Flor', 'Rosa'], 'Olivo': ['Aceite', 'Mediterráneo'],
+            'Rosa': ['Espina', 'Amor'], 'Tulipán': ['Holanda', 'Bulbo'], 'Girasol': ['Sol', 'Amarillo'],
+            'Margarita': ['Blanca', 'Pétalos'], 'Orquídea': ['Elegante', 'Tropical'], 'Lirio': ['Elegante', 'Blanco'],
+            'Clavel': ['España', 'Rojo'], 'Jazmín': ['Perfume', 'Blanco'], 'Lavanda': ['Púrpura', 'Aromática'],
+            'Violeta': ['Pequeña', 'Púrpura'], 'Azalea': ['Arbusto', 'Colorida'], 'Magnolia': ['Grande', 'Blanca'],
+            'Lluvia': ['Agua', 'Gotas'], 'Nieve': ['Blanca', 'Frío'], 'Viento': ['Aire', 'Mover'],
+            'Huracán': ['Tormenta', 'Fuerte'], 'Tornado': ['Remolino', 'Destruir'], 'Rayo': ['Eléctrico', 'Luz'],
+            'Trueno': ['Sonido', 'Rayo'], 'Arcoíris': ['Colores', 'Lluvia'], 'Aurora': ['Polar', 'Luces'],
+            'Eclipse': ['Sol', 'Luna'], 'Terremoto': ['Temblar', 'Tierra'], 'Tsunami': ['Ola', 'Grande']
+        },
+
+        ciencia: {
+            'Átomo': ['Pequeño', 'Partícula'], 'Molécula': ['Átomos', 'Compuesto'], 'Electrón': ['Negativo', 'Órbita'],
+            'Protón': ['Positivo', 'Núcleo'], 'Neutrón': ['Neutro', 'Núcleo'], 'Energía': ['Fuerza', 'Poder'],
+            'Gravedad': ['Caer', 'Tierra'], 'Magnetismo': ['Imán', 'Atraer'], 'Electricidad': ['Corriente', 'Voltaje'],
+            'Luz': ['Fotón', 'Ver'], 'Sonido': ['Onda', 'Oír'], 'Calor': ['Temperatura', 'Energía'],
+            'Velocidad': ['Rápido', 'Distancia'], 'Masa': ['Peso', 'Materia'], 'Densidad': ['Compacto', 'Masa'],
+            'Radiación': ['Energía', 'Ondas'], 'Láser': ['Luz', 'Concentrada'], 'Plasma': ['Estado', 'Ionizado'],
+            'Cuántico': ['Pequeño', 'Partícula'], 'Relatividad': ['Einstein', 'Tiempo'],
+            'Elemento': ['Tabla', 'Puro'], 'Compuesto': ['Mezcla', 'Elementos'], 'Reacción': ['Cambio', 'Química'],
+            'Ácido': ['pH', 'Corrosivo'], 'Base': ['Alcalino', 'pH'], 'pH': ['Ácido', 'Básico'],
+            'Oxidación': ['Óxido', 'Electrones'], 'Cristal': ['Estructura', 'Sólido'], 'Solución': ['Disolver', 'Líquido'],
+            'Hidrógeno': ['H', 'Ligero'], 'Oxígeno': ['O', 'Respirar'], 'Carbono': ['C', 'Orgánico'],
+            'Oro': ['Au', 'Precioso'], 'Plata': ['Ag', 'Metal'], 'Hierro': ['Fe', 'Fuerte'],
+            'Célula': ['Vida', 'Pequeña'], 'ADN': ['Genético', 'Doble'], 'ARN': ['Genético', 'Simple'],
+            'Gen': ['Herencia', 'Código'], 'Cromosoma': ['Genes', 'Par'], 'Proteína': ['Aminoácido', 'Función'],
+            'Enzima': ['Catalizador', 'Biológico'], 'Virus': ['Infectar', 'Pequeño'], 'Bacteria': ['Microorganismo', 'Célula'],
+            'Evolución': ['Darwin', 'Cambio'], 'Mutación': ['Cambio', 'Genético'], 'Ecosistema': ['Ambiente', 'Vida'],
+            'Fotosíntesis': ['Plantas', 'Luz'], 'Respiración': ['Oxígeno', 'Energía'], 'Metabolismo': ['Energía', 'Proceso'],
+            'Planeta': ['Órbita', 'Redondo'], 'Estrella': ['Luz', 'Fusión'], 'Galaxia': ['Estrellas', 'Espiral'],
+            'Nebulosa': ['Gas', 'Colorida'], 'Agujero Negro': ['Gravedad', 'Absorber'], 'Supernova': ['Explosión', 'Estrella'],
+            'Cometa': ['Cola', 'Hielo'], 'Asteroide': ['Roca', 'Espacio'], 'Satélite': ['Órbita', 'Luna'],
+            'Telescopio': ['Ver', 'Lejos'], 'Sistema Solar': ['Sol', 'Planetas'], 'Vía Láctea': ['Galaxia', 'Casa'],
+            'Big Bang': ['Origen', 'Explosión'], 'Universo': ['Todo', 'Espacio']
+        }
+    };
+
+    // Combinar pistas existentes con las nuevas
+    const allHints = { ...hintCategories, ...expandedHints };
+
+    // Obtener pistas específicas para la palabra
+    const categoryHints = allHints[theme];
+    if (categoryHints && categoryHints[selectedWord]) {
+        const possibleHints = categoryHints[selectedWord];
+        return possibleHints[Math.floor(Math.random() * possibleHints.length)];
+    }
+
+    // Si no hay pista específica, usar una palabra aleatoria del mismo tema (fallback)
+    const words = gameData.themes[theme];
+    const otherWords = words.filter(w => w !== selectedWord);
+    return otherWords[Math.floor(Math.random() * otherWords.length)];
+}
 
 // Función antigua mantenida para compatibilidad - redirige al nuevo sistema
 function showRole() {
@@ -3405,27 +3612,12 @@ function showEliminationScreen(result) {
     }
 
     const eliminatedPlayer = gameData.players[selectedVote];
-    let roleText = '😇 ERA INOCENTE';
-    let isBadStart = false; // Para estilos (rojo/verde)
-    let message = '';
-
-    // Determinar rol
-    if (gameData.impostorIndexes.includes(selectedVote)) {
-        roleText = '🎭 ERA UN IMPOSTOR';
-        isBadStart = true; // Bueno para inocentes, pero usamos estilo "rojo" para denotar rol "malo" revelado?
-        // En el código original: isImpostor -> remove 'innocent' class (que suele ser verde/azul) -> default (rojo?)
-    } else if (gameData.helperIndexes && gameData.helperIndexes.includes(selectedVote)) {
-        roleText = '🟠 ERA EL AYUDANTE';
-        isBadStart = true;
-    } else if (gameData.childIndexes && gameData.childIndexes.includes(selectedVote)) {
-        roleText = '🔵 ERA EL NIÑO';
-        isBadStart = false; // Especial
-    }
+    const isImpostor = selectedVote === gameData.impostorIndex;
 
     // Guardar información del eliminado
     eliminatedPlayerInfo = {
         name: eliminatedPlayer,
-        roleText: roleText,
+        isImpostor: isImpostor,
         result: result
     };
 
@@ -3436,31 +3628,27 @@ function showEliminationScreen(result) {
     const eliminatedRole = document.getElementById('eliminated-role');
     const eliminationMessage = document.getElementById('elimination-message');
 
-    eliminatedRole.textContent = roleText;
-
-    if (isBadStart) {
+    if (isImpostor) {
         eliminatedPlayerDiv.classList.remove('innocent');
+        eliminatedRole.textContent = '🎭 ERA EL IMPOSTOR';
+        eliminationMessage.textContent = '¡Los inocentes han ganado!';
+
+        // Mostrar botón de resultados finales
+        document.getElementById('continue-game-btn').classList.add('hidden');
+        document.getElementById('end-game-btn').classList.remove('hidden');
     } else {
         eliminatedPlayerDiv.classList.add('innocent');
-    }
+        eliminatedRole.textContent = '😇 ERA INOCENTE';
 
-    // Mensajes según resultado del juego
-    if (result === 'child-win') {
-        eliminationMessage.textContent = '¡El Niño ha ganado al ser eliminado!';
-        document.getElementById('continue-game-btn').classList.add('hidden');
-        document.getElementById('end-game-btn').classList.remove('hidden');
-    } else if (result === 'innocent-win') {
-        eliminationMessage.textContent = '¡Los inocentes han ganado! Impostor(es) eliminados.';
-        document.getElementById('continue-game-btn').classList.add('hidden');
-        document.getElementById('end-game-btn').classList.remove('hidden');
-    } else if (result === 'impostor-win') {
-        eliminationMessage.textContent = '¡El impostor ha ganado! Quedan muy pocos inocentes.';
-        document.getElementById('continue-game-btn').classList.add('hidden');
-        document.getElementById('end-game-btn').classList.remove('hidden');
-    } else {
-        eliminationMessage.textContent = 'El juego continúa...';
-        document.getElementById('continue-game-btn').classList.remove('hidden');
-        document.getElementById('end-game-btn').classList.add('hidden');
+        if (result === 'continue') {
+            eliminationMessage.textContent = 'El juego continúa...';
+            document.getElementById('continue-game-btn').classList.remove('hidden');
+            document.getElementById('end-game-btn').classList.add('hidden');
+        } else if (result === 'impostor-win') {
+            eliminationMessage.textContent = '¡El impostor ha ganado! Quedan muy pocos inocentes.';
+            document.getElementById('continue-game-btn').classList.add('hidden');
+            document.getElementById('end-game-btn').classList.remove('hidden');
+        }
     }
 
     showScreen('elimination-screen');
@@ -3485,94 +3673,102 @@ function displayResults(result = null) {
     const resultsContent = document.getElementById('results-content');
     let content = '';
 
-
     // SIEMPRE mostrar la palabra secreta al final de la partida
     content += `<h3>🔍 La palabra era: <strong>${gameData.selectedWord}</strong></h3>`;
-    if (gameData.showTheme || gameData.selectedTheme) {
-        content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p><br>`;
-    }
+    content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p><br>`;
 
-    // Mostrar información según el modo de juego
+    // Mostrar información del modo loco si aplica
     if (gameData.gameMode === 'crazy-innocent') {
-        content += `<p>🤪 <strong>Modo Loco:</b> ¡Todos eran inocentes!</p>`;
+        content += `<p>🤪 <strong>Modo Loco:</strong> ¡Todos eran inocentes!</p>`;
         content += `<div class="winner-announcement innocent-win">
             🎉 ¿Se dieron cuenta de que no había impostor?
         </div>`;
     } else if (gameData.gameMode === 'crazy-impostor') {
-        content += `<p>🤪 <strong>Modo Loco:</b> ¡Todos eran impostores!</p>`;
+        content += `<p>🤪 <strong>Modo Loco:</strong> ¡Todos eran impostores!</p>`;
         content += `<div class="winner-announcement impostor-win">
             🎭 Nadie conocía la palabra real<br>
             ¿Lograron fingir bien?
         </div>`;
-    } else {
-        // Modo Normal y Roles+ (Lógica unificada)
+    } else if (gameData.gameMode === 'roles-plus') {
+        // Modo Roles+ - mostrar información de todos los roles especiales
+        const impostorName = gameData.players[gameData.impostorIndex];
+        const helperNames = gameData.helperIndexes.map(idx => gameData.players[idx]);
+        const childNames = gameData.childIndexes.map(idx => gameData.players[idx]);
 
-        // Obtener listas de roles
-        let impostorNames = [];
-        if (gameData.impostorIndexes && gameData.impostorIndexes.length > 0) {
-            impostorNames = gameData.impostorIndexes.map(idx => gameData.players[idx]);
-        } else if (gameData.impostorIndex !== -1) {
-            impostorNames = [gameData.players[gameData.impostorIndex]];
-        }
-
-        const helperNames = gameData.helperIndexes ? gameData.helperIndexes.map(idx => gameData.players[idx]) : [];
-        const childNames = gameData.childIndexes ? gameData.childIndexes.map(idx => gameData.players[idx]) : [];
-
-        // Mostrar roles revelados
-        if (impostorNames.length > 0) {
-            content += `<p>🎭 <strong>Impostor(es):</strong> ${impostorNames.join(', ')}</p>`;
-        }
+        content += `<p>🎭 <strong>El impostor era:</strong> ${impostorName}</p>`;
         if (helperNames.length > 0) {
-            content += `<p>🤝 <strong>Ayudante(s):</strong> ${helperNames.join(', ')}</p>`;
+            content += `<p>�r <strong>Los ayudantes eran:</strong> ${helperNames.join(', ')}</p>`;
         }
         if (childNames.length > 0) {
-            content += `<p>🔵 <strong>Niño(s):</strong> ${childNames.join(', ')}</p>`;
+            content += `<p>🔵 <strong>Los niños eran:</strong> ${childNames.join(', ')}</p>`;
         }
         content += `<br>`;
 
-        // Mostrar jugadores eliminados
-        if (gameData.eliminatedPlayers && gameData.eliminatedPlayers.length > 0) {
+        // Mostrar jugadores eliminados si los hay
+        if (gameData.eliminatedPlayers.length > 0) {
             content += `<p><strong>Jugadores eliminados:</strong> ${gameData.eliminatedPlayers.join(', ')}</p><br>`;
         }
 
-        // Mensaje de victoria/derrota
+        // Determinar ganador según el resultado
         if (result === 'child-win') {
-            const childName = childNames.length > 0 ? childNames[0] : "El Niño";
             content += `<div class="winner-announcement child-win">
-                🔵 ¡${childName} ganó!<br>
-                Fue eliminado, logrando su objetivo.
+                🔵 ¡${childName} (Niño) ganó!<br>
+                Lo eliminaron y esa era su condición de victoria
             </div>`;
-        } else if (result === 'innocent-win') {
+        } else if (result === 'innocent-win' || selectedVote === gameData.impostorIndex) {
             content += `<div class="winner-announcement innocent-win">
                 🎉 ¡Los inocentes ganaron!<br>
-                El impostor fue descubierto.
+                Descubrieron al impostor correctamente
             </div>`;
         } else if (result === 'impostor-win') {
             content += `<div class="winner-announcement impostor-win">
-                🎭 ¡El impostor ganó!<br>
-                Logró engañar a los inocentes.
+                🎭 ¡El impostor y ayudante ganaron!<br>
+                Lograron engañar a todos
             </div>`;
         } else if (selectedVote === -1) {
             content += `<div class="winner-announcement">
                 🤷‍♂️ No hubo votación<br>
-                Nadie fue eliminado.
+                El impostor se salvó por falta de consenso
             </div>`;
         } else {
-            // Fallback para lógica antigua o casos mixtos
             const votedPlayer = gameData.players[selectedVote];
-            const isImpostor = impostorNames.includes(votedPlayer);
+            content += `<div class="winner-announcement impostor-win">
+                🎭 ¡El impostor y ayudante ganaron!<br>
+                Votaron por ${votedPlayer} (inocente)
+            </div>`;
+        }
+    } else {
+        // Juego normal - SIEMPRE mostrar quién era el impostor
+        const impostorName = gameData.players[gameData.impostorIndex];
+        content += `<p>🎭 <strong>El impostor era:</strong> ${impostorName}</p><br>`;
 
-            if (isImpostor) {
-                content += `<div class="winner-announcement innocent-win">
-                    🎉 ¡Los inocentes ganaron!<br>
-                    Descubrieron al impostor correctamente
-                </div>`;
-            } else {
-                content += `<div class="winner-announcement impostor-win">
-                    🎭 El impostor gana esta ronda<br>
-                    Votaron por ${votedPlayer} (inocente)
-                </div>`;
-            }
+        // Mostrar jugadores eliminados si los hay
+        if (gameData.eliminatedPlayers.length > 0) {
+            content += `<p><strong>Jugadores eliminados:</strong> ${gameData.eliminatedPlayers.join(', ')}</p><br>`;
+        }
+
+        // Determinar ganador
+        if (result === 'innocent-win' || selectedVote === gameData.impostorIndex) {
+            content += `<div class="winner-announcement innocent-win">
+                🎉 ¡Los inocentes ganaron!<br>
+                Descubrieron al impostor correctamente
+            </div>`;
+        } else if (result === 'impostor-win') {
+            content += `<div class="winner-announcement impostor-win">
+                🎭 ¡El impostor ganó!<br>
+                Logró sobrevivir hasta el final
+            </div>`;
+        } else if (selectedVote === -1) {
+            content += `<div class="winner-announcement">
+                🤷‍♂️ No hubo votación<br>
+                El impostor se salvó por falta de consenso
+            </div>`;
+        } else {
+            const votedPlayer = gameData.players[selectedVote];
+            content += `<div class="winner-announcement impostor-win">
+                🎭 ¡El impostor ganó!<br>
+                Votaron por ${votedPlayer} (inocente)
+            </div>`;
         }
     }
 
@@ -3604,7 +3800,372 @@ function resetGameKeepSettings() {
     currentSelectedPlayer = '';
 }
 
+// Funciones eliminadas - usar las versiones del modal más abajo
 
+function showHome() {
+    showScreen('home-screen');
+    // No resetear si venimos de resultados, para mantener configuraciones
+}
+
+function showHomeAndReset() {
+    showScreen('home-screen');
+    resetGame();
+}
+
+function showSetup() {
+    showScreen('setup-screen');
+    // Cargar configuraciones anteriores si existen
+    loadPreviousSettings();
+    // Inicializar visibilidad del tema
+    toggleThemeVisibility();
+}
+
+function showRules() {
+    showScreen('rules-screen');
+}
+
+// Función eliminada - usar la versión correcta más arriba
+
+function startGame() {
+    // Recoger nombres de jugadores
+    const playerCount = parseInt(document.getElementById('player-count').value);
+    gameData.players = [];
+
+    for (let i = 1; i <= playerCount; i++) {
+        const name = document.getElementById(`player-${i}`).value.trim();
+        // Si no hay nombre, usar el valor por defecto
+        const finalName = name || `Jugador ${i}`;
+        gameData.players.push(finalName);
+    }
+
+    // Configurar juego
+    setupGame();
+    showScreen('roles-screen');
+    updateCurrentPlayer();
+}
+
+// Función eliminada - usar la versión correcta más arriba
+
+// Seleccionar jugador
+function selectPlayer(playerName, playerIndex) {
+    currentSelectedPlayer = playerName;
+    gameData.currentPlayerIndex = playerIndex;
+    document.getElementById('selected-player-name').textContent = playerName;
+
+    // Resetear la pantalla de rol para la animación
+    const revealCard = document.querySelector('.role-reveal-card');
+    const roleCard = document.getElementById('role-content-display');
+
+    // Resetear estados de animación
+    revealCard.classList.remove('fade-out');
+    revealCard.style.display = 'block';
+    roleCard.classList.add('hidden');
+    roleCard.classList.remove('show');
+
+    showScreen('individual-role-screen');
+}
+
+// Revelar rol al tocar
+function revealRole() {
+    const currentPlayer = gameData.currentPlayerIndex;
+    const roleContent = document.getElementById('individual-role-content');
+    const roleCard = document.getElementById('role-content-display');
+    const revealCard = document.querySelector('.role-reveal-card');
+
+    let isImpostor = false;
+    let content = '';
+
+    // Determinar si es impostor según el modo
+    if (gameData.gameMode === 'normal') {
+        isImpostor = currentPlayer === gameData.impostorIndex;
+    } else if (gameData.gameMode === 'crazy-innocent') {
+        isImpostor = false;
+    } else if (gameData.gameMode === 'crazy-impostor') {
+        isImpostor = true;
+    }
+
+    // Preparar el contenido según el rol
+    if (isImpostor && gameData.gameMode !== 'crazy-innocent') {
+        roleCard.className = 'role-card';
+        if (gameData.gameMode === 'crazy-impostor') {
+            content = `
+                <h3>🤪 MODO LOCO</h3>
+                <p>¡Todos son impostores!</p>
+                <p>Nadie conoce la palabra real</p>
+                <div class="word-display">Tema: ${gameData.selectedTheme}</div>
+            `;
+        } else {
+            content = `
+                <h3>🎭 IMPOSTOR</h3>
+                <p>¡Eres el impostor!</p>
+                <p>No conoces la palabra secreta</p>
+                <div class="word-display">Tema: ${gameData.selectedTheme}</div>
+            `;
+
+            if (gameData.giveHint && gameData.impostorHint) {
+                content += `<p><strong>Pista:</strong> ${gameData.impostorHint}</p>`;
+            }
+        }
+    } else {
+        roleCard.className = 'role-card innocent';
+        if (gameData.gameMode === 'crazy-innocent') {
+            content = `
+                <h3>🤪 MODO LOCO</h3>
+                <p>¡Todos son inocentes!</p>
+                <p>No hay impostor</p>
+                <div class="word-display">${gameData.selectedWord}</div>
+            `;
+        } else {
+            content = `
+                <h3>😇 INOCENTE</h3>
+                <p>Conoces la palabra secreta</p>
+                <div class="word-display">${gameData.selectedWord}</div>
+            `;
+        }
+
+        if (gameData.showTheme) {
+            content += `<p><strong>Tema:</strong> ${gameData.selectedTheme}</p>`;
+        }
+    }
+
+    // Llenar el contenido del rol
+    roleContent.innerHTML = content;
+
+    // Iniciar la animación de transición
+    revealCard.classList.add('fade-out');
+
+    // Después de que termine la animación de salida, mostrar el contenido del rol
+    setTimeout(() => {
+        roleCard.classList.remove('hidden');
+        roleCard.classList.add('show');
+
+        // Marcar jugador como visto
+        viewedPlayers.add(currentSelectedPlayer);
+    }, 250); // La mitad del tiempo de transición para un efecto más suave
+}
+
+// Volver a la selección de jugadores
+function backToPlayerSelection() {
+    showScreen('roles-screen');
+    createPlayersGrid();
+}
+
+// Función eliminada - usar la versión correcta más arriba
+
+function setupDiscussion() {
+    // Mostrar información del juego
+    const playersDisplay = document.getElementById('players-display');
+    playersDisplay.innerHTML = `
+        <div class="game-info">
+            <p><strong>Jugadores:</strong> ${gameData.players.join(', ')}</p>
+            <p><strong>Tema:</strong> ${gameData.selectedTheme}</p>
+            <p><strong>Modo:</strong> ${gameData.gameMode === 'normal' ? 'Normal' : 'Loco'}</p>
+        </div>
+    `;
+
+    // Configurar el botón de votación manual si es necesario
+    if (gameData.roundType === 'single-vote') {
+        document.getElementById('manual-vote-btn').classList.remove('hidden');
+    }
+}
+
+function startTimer() {
+    gameData.timeLeft = 300; // 5 minutos
+    updateTimerDisplay();
+
+    gameData.timer = setInterval(() => {
+        gameData.timeLeft--;
+        updateTimerDisplay();
+
+        if (gameData.timeLeft <= 0) {
+            clearInterval(gameData.timer);
+            // Auto-iniciar votación cuando se acabe el tiempo
+            startVoting();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(gameData.timeLeft / 60);
+    const seconds = gameData.timeLeft % 60;
+    const timerDisplay = document.getElementById('timer-display');
+    if (timerDisplay) {
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function startVoting() {
+    clearInterval(gameData.timer);
+    showScreen('voting-screen');
+    setupVoting();
+}
+
+function setupVoting() {
+    const votingOptions = document.getElementById('voting-options');
+    votingOptions.innerHTML = '';
+
+    gameData.activePlayers.forEach((player, index) => {
+        const originalIndex = gameData.players.indexOf(player);
+        const button = document.createElement('button');
+        button.className = 'voting-option';
+        button.textContent = player;
+        button.onclick = () => selectVote(originalIndex);
+        votingOptions.appendChild(button);
+    });
+
+    // Resetear selección
+    selectedVote = -1;
+}
+
+function selectVote(playerIndex) {
+    selectedVote = playerIndex;
+
+    // Actualizar visualización
+    document.querySelectorAll('.voting-option').forEach((btn, index) => {
+        btn.classList.remove('selected');
+    });
+
+    const buttons = document.querySelectorAll('.voting-option');
+    const selectedButton = Array.from(buttons).find(btn =>
+        gameData.players.indexOf(btn.textContent) === playerIndex
+    );
+
+    if (selectedButton) {
+        selectedButton.classList.add('selected');
+    }
+}
+
+function revealResults() {
+    const result = handleRoundType();
+    currentGameResult = result;
+
+    if (result === 'continue' || result === 'next-round') {
+        // Mostrar pantalla de eliminación antes de continuar
+        showEliminationScreen(result);
+        return;
+    }
+
+    // Juego terminado - mostrar resultados finales
+    showScreen('results-screen');
+    displayResults(result);
+}
+
+// Función mejorada para configurar el juego con modo loco
+function setupGame() {
+    const themeSelect = document.getElementById('theme-select').value;
+    const specialMode = document.getElementById('special-mode').value;
+
+    gameData.showTheme = document.getElementById('show-theme').checked;
+    gameData.giveHint = document.getElementById('give-hint').checked;
+    gameData.roundType = document.getElementById('round-type').value;
+    gameData.currentPlayerIndex = 0;
+    gameData.currentRound = 1;
+    gameData.eliminatedPlayers = [];
+    gameData.activePlayers = [...gameData.players];
+
+    // Resetear el sistema de roles para nuevo juego
+    viewedPlayers.clear();
+    currentSelectedPlayer = '';
+
+    // Seleccionar tema y palabra según el modo
+    if (themeSelect === 'random') {
+        const themes = Object.keys(gameData.themes);
+        gameData.selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    } else if (themeSelect === 'custom') {
+        // Modo personalizado: seleccionar de las categorías elegidas
+        const selectedCategories = getSelectedCategories();
+        if (selectedCategories.length === 0) {
+            showColoredAlert('Por favor, selecciona al menos una categoría.', 'warning');
+            return;
+        }
+        gameData.selectedTheme = selectedCategories[Math.floor(Math.random() * selectedCategories.length)];
+    } else {
+        gameData.selectedTheme = themeSelect;
+    }
+
+    const words = gameData.themes[gameData.selectedTheme];
+    gameData.selectedWord = words[Math.floor(Math.random() * words.length)];
+
+    // Generar la pista del impostor una sola vez para toda la partida
+    if (gameData.giveHint) {
+        gameData.impostorHint = generateAdvancedHint(gameData.selectedWord, gameData.selectedTheme);
+    } else {
+        gameData.impostorHint = null;
+    }
+
+    // Asignar roles según el modo
+    if (specialMode === 'normal') {
+        gameData.gameMode = 'normal';
+        gameData.impostorIndex = Math.floor(Math.random() * gameData.players.length);
+        gameData.helperIndexes = [];
+        gameData.childIndexes = [];
+        gameData.tabooWords = [];
+    } else if (specialMode === 'crazy') {
+        // Modo loco con 5% de probabilidad de eventos especiales
+        const randomChance = Math.random();
+        if (randomChance < 0.025) { // 2.5% todos inocentes
+            gameData.gameMode = 'crazy-innocent';
+            gameData.impostorIndex = -1;
+        } else if (randomChance < 0.05) { // 2.5% todos impostores
+            gameData.gameMode = 'crazy-impostor';
+            gameData.impostorIndex = -2;
+        } else { // 95% juego normal
+            gameData.gameMode = 'normal';
+            gameData.impostorIndex = Math.floor(Math.random() * gameData.players.length);
+        }
+        gameData.helperIndexes = [];
+        gameData.childIndexes = [];
+        gameData.tabooWords = [];
+    } else if (specialMode === 'roles-plus') {
+        // Modo Roles+ con roles especiales
+        gameData.gameMode = 'roles-plus';
+
+        // Obtener cantidades de roles de los controles
+        const impostorCount = parseInt(document.getElementById('impostor-count').value);
+        const helperCount = parseInt(document.getElementById('helper-count').value);
+        const childCount = parseInt(document.getElementById('child-count').value);
+
+        // Verificar que hay suficientes jugadores
+        const totalSpecialRoles = impostorCount + helperCount + childCount;
+        if (gameData.players.length < totalSpecialRoles + 1) {
+            showColoredAlert(`El modo Roles+ requiere al menos ${totalSpecialRoles + 1} jugadores para esta configuración.`, 'warning');
+            return;
+        }
+
+        // Asignar roles aleatoriamente
+        const availableIndexes = [...Array(gameData.players.length).keys()];
+
+        // Asignar impostores (siempre al menos 1)
+        for (let i = 0; i < impostorCount; i++) {
+            const impostorIdx = Math.floor(Math.random() * availableIndexes.length);
+            if (i === 0) {
+                gameData.impostorIndex = availableIndexes.splice(impostorIdx, 1)[0];
+            } else {
+                // Para múltiples impostores, usar el primer índice como principal
+                availableIndexes.splice(impostorIdx, 1);
+            }
+        }
+
+        // Asignar ayudantes
+        gameData.helperIndexes = [];
+        for (let i = 0; i < helperCount; i++) {
+            const helperIdx = Math.floor(Math.random() * availableIndexes.length);
+            gameData.helperIndexes.push(availableIndexes.splice(helperIdx, 1)[0]);
+        }
+
+        // Asignar niños
+        gameData.childIndexes = [];
+        for (let i = 0; i < childCount; i++) {
+            const childIdx = Math.floor(Math.random() * availableIndexes.length);
+            gameData.childIndexes.push(availableIndexes.splice(childIdx, 1)[0]);
+        }
+
+        // Generar palabras tabú para los ayudantes
+        if (helperCount > 0) {
+            gameData.tabooWords = generateTabooWords(gameData.selectedWord, gameData.selectedTheme);
+        }
+    }
+}
 // Funciones para el modal de categorías personalizadas
 function openCategoriesModal() {
     const modal = document.getElementById('categories-modal');
