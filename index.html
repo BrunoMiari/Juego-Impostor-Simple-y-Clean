@@ -40,7 +40,6 @@
                     <option value="peliculas">🎬 Películas</option>
                     <option value="paises">🌍 Países</option>
                     <option value="profesiones">👨‍💼 Profesiones</option>
-                    <option value="colores">🎨 Colores</option>
                     <option value="objetos">📱 Objetos</option>
                     <option value="musica">🎵 Música</option>
                     <option value="tecnologia">💻 Tecnología</option>
@@ -84,6 +83,11 @@
             </div>
 
             <div class="setup-section">
+                <label>Tiempo de discusión (minutos, 0 = infinito):</label>
+                <input type="number" id="discussion-time" min="0" max="60" value="0" placeholder="0 para infinito">
+            </div>
+
+            <div class="setup-section">
                 <label>Tipo de rondas:</label>
                 <select id="round-type">
                     <option value="elimination">🎯 Eliminación por rondas</option>
@@ -113,7 +117,7 @@
             <button id="start-discussion-btn" class="btn-success hidden" onclick="startDiscussion()">Iniciar
                 Discusión</button>
         </div>
-        
+
         <!-- Botón Nuevo Juego fuera del contenedor principal -->
         <div id="new-game-container" class="new-game-outside">
             <button class="btn-secondary" onclick="showHomeAndReset()">🎲 Nuevo Juego</button>
@@ -123,7 +127,7 @@
         <div id="individual-role-screen" class="screen">
             <h2 id="selected-player-name"></h2>
             <div class="role-reveal-container">
-                <div class="role-reveal-card" onclick="revealRoleFixed()">
+                <div class="role-reveal-card" onclick="revealRole()">
                     <div class="role-reveal-text">
                         <h3>👆 Toca para ver tu rol</h3>
                         <p>Asegúrate de que nadie más esté mirando</p>
@@ -223,11 +227,13 @@
                 <p><strong>Modo Loco:</strong></p>
                 <p>• <strong>Todos Inocentes:</strong> Nadie es impostor, deben darse cuenta</p>
                 <p>• <strong>Todos Impostores:</strong> Nadie conoce la palabra real</p>
-                
+
                 <p><strong>Modo Roles+:</strong> Añade roles especiales al juego</p>
                 <p>• <strong>🎭 Impostor:</strong> No conoce la palabra (como siempre)</p>
-                <p>• <strong>🟠 Ayudante:</strong> Conoce la palabra y quién es el impostor. Debe ayudar al impostor a ganar sin ser descubierto. Tiene palabras TABÚ que no puede decir.</p>
-                <p>• <strong>🔵 Niño Inocente:</strong> Es un inocente normal, pero si lo eliminan, ¡ÉL GANA! Debe jugar normal pero si sospechan de él, perfecto.</p>
+                <p>• <strong>🟠 Ayudante:</strong> Conoce la palabra y quién es el impostor. Debe ayudar al impostor a
+                    ganar sin ser descubierto. Tiene palabras TABÚ que no puede decir.</p>
+                <p>• <strong>🔵 Niño Inocente:</strong> Es un inocente normal, pero si lo eliminan, ¡ÉL GANA! Debe jugar
+                    normal pero si sospechan de él, perfecto.</p>
                 <p>• <strong>😇 Inocentes:</strong> Conocen la palabra (como siempre)</p>
             </div>
             <button class="btn-primary" onclick="showHome()">Volver</button>
@@ -260,9 +266,6 @@
                     </label>
                     <label class="checkbox-label">
                         <input type="checkbox" id="cat-profesiones" value="profesiones" checked> 👨‍💼 Profesiones
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="cat-colores" value="colores" checked> 🎨 Colores
                     </label>
                     <label class="checkbox-label">
                         <input type="checkbox" id="cat-objetos" value="objetos" checked> 📱 Objetos
@@ -310,7 +313,7 @@
                             <option value="2">2</option>
                         </select>
                     </div>
-                    
+
                     <div class="role-item helper">
                         <div class="role-header">
                             <span class="role-emoji">🟠</span>
@@ -322,7 +325,7 @@
                             <option value="2">2</option>
                         </select>
                     </div>
-                    
+
                     <div class="role-item child">
                         <div class="role-header">
                             <span class="role-emoji">🔵</span>
@@ -335,7 +338,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="roles-warning" id="roles-warning" style="display: none;">
                     <div class="warning-content">
                         <span class="warning-icon">⚠️</span>
