@@ -227,13 +227,13 @@ h3 {
 
 .role-emoji {
     font-size: 1.5em;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
 .role-name {
     font-weight: 600;
     font-size: 1.1em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 .role-select {
@@ -242,9 +242,9 @@ h3 {
     text-align: center;
     font-weight: bold;
     font-size: 1.1em;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255,255,255,0.3);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255,255,255,0.9);
     color: #333;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -252,7 +252,7 @@ h3 {
 
 .role-select:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255,255,255,0.8);
     background: white;
     transform: scale(1.05);
 }
@@ -280,14 +280,14 @@ h3 {
 
 .warning-icon {
     font-size: 1.5em;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
 .warning-text {
     color: #c62828;
     font-weight: 600;
     font-size: 1em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Avisos de éxito para móviles */
@@ -308,14 +308,14 @@ h3 {
 
 .success-icon {
     font-size: 1.5em;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
 .success-text {
     color: #2e7d32;
     font-weight: 600;
     font-size: 1em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Avisos de información para móviles */
@@ -336,14 +336,14 @@ h3 {
 
 .info-icon {
     font-size: 1.5em;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
 .info-text {
     color: #1565c0;
     font-weight: 600;
     font-size: 1em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Avisos flotantes coloridos */
@@ -366,7 +366,6 @@ h3 {
         opacity: 0;
         transform: translateX(-50%) translateY(-20px);
     }
-
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
@@ -378,7 +377,6 @@ h3 {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
-
     to {
         opacity: 0;
         transform: translateX(-50%) translateY(-20px);
@@ -391,27 +389,25 @@ h3 {
         padding: 10px 12px;
         min-height: 45px;
     }
-
+    
     .role-emoji {
         font-size: 1.3em;
     }
-
+    
     .role-name {
         font-size: 1em;
     }
-
+    
     .role-select {
         width: 45px;
         height: 32px;
         font-size: 1em;
     }
-
-    .warning-text,
-    .success-text,
-    .info-text {
+    
+    .warning-text, .success-text, .info-text {
         font-size: 0.9em;
     }
-
+    
     .colored-alert {
         min-width: 280px;
         max-width: 95%;
@@ -488,9 +484,6 @@ h3 {
     text-align: center;
     margin: 20px 0;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
 .role-card.innocent {
@@ -507,28 +500,25 @@ h3 {
     color: white;
 }
 
-.role-card p {
-    font-size: 1.1em;
-    margin: 5px 0;
-}
-
-.taboo-section {
-    margin-top: 15px;
-    background: rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    border-radius: 10px;
-}
-
 .taboo-words {
-    background: rgba(255, 255, 255, 0.9);
-    color: #c62828;
-    padding: 15px;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 10px;
     border-radius: 8px;
     margin: 10px 0;
     font-weight: bold;
+    font-size: 1.1em;
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+.role-card h3 {
+    color: white;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.role-card p {
     font-size: 1.2em;
-    border: 2px dashed #ff5252;
-    line-height: 1.6;
+    margin: 10px 0;
 }
 
 .word-display {
@@ -1002,9 +992,7 @@ os para la nueva interfaz de roles */
     .role-reveal-text h3 {
         font-size: 1.5em;
     }
-}
-
-/* Moda
+}/* Moda
 l para categorías personalizadas */
 .modal {
     display: none;
@@ -1037,13 +1025,8 @@ l para categorías personalizadas */
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes slideUp {
@@ -1051,7 +1034,6 @@ l para categorías personalizadas */
         opacity: 0;
         transform: translateY(50px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1166,7 +1148,7 @@ l para categorías personalizadas */
     accent-color: #667eea;
 }
 
-.modal-body .checkbox-label input[type="checkbox"]:checked+span {
+.modal-body .checkbox-label input[type="checkbox"]:checked + span {
     font-weight: 600;
 }
 
@@ -1197,28 +1179,26 @@ l para categorías personalizadas */
     .modal {
         padding: 10px;
     }
-
+    
     .modal-content {
         max-height: 90vh;
     }
-
+    
     .modal-header,
     .modal-body,
     .modal-footer {
         padding-left: 20px;
         padding-right: 20px;
     }
-
+    
     .modal-body {
         max-height: 60vh;
     }
-}
-
-/* Botó
+}/* Botó
 n Nuevo Juego fuera del contenedor */
 .new-game-outside {
     text-align: center;
     margin-top: 20px;
-    display: none;
-    /* Oculto por defecto */
+    display: none; /* Oculto por defecto */
 }
+
