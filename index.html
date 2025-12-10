@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego del Impostor</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="liarsDeck.css">
 </head>
 
 <body>
@@ -16,11 +17,46 @@
                 <h1>🎭 IMPOSTOR</h1>
                 <p>Juego para amigos</p>
             </div>
-            <button class="btn-primary" onclick="showSetup()">Nuevo Juego</button>
+            <button class="btn-primary" onclick="showSetup()">Nuevo Juego (Impostor)</button>
+            <button class="btn-primary" onclick="showModes()">Modos de Juego</button>
             <button class="btn-secondary" onclick="showRules()">Cómo Jugar</button>
         </div>
 
-        <!-- Pantalla de configuración -->
+        <!-- Pantalla de Selección de Modos -->
+        <div id="modes-screen" class="screen">
+            <h2>Modos de Juego</h2>
+            <div class="modes-list">
+                <button class="btn-primary mode-btn" onclick="showLiarsDeckSetup()">
+                    <span class="mode-icon">🃏</span>
+                    <span class="mode-text">Liar's Deck</span>
+                </button>
+                <!-- Próximamente más modos -->
+            </div>
+            <button class="btn-secondary" onclick="showHome()">Volver</button>
+        </div>
+
+        <!-- Configuración Liar's Deck -->
+        <div id="liars-deck-setup-screen" class="screen">
+            <h2>Liar's Deck</h2>
+
+            <div class="setup-section">
+                <label>Número de jugadores (2-6):</label>
+                <input type="number" id="liars-player-count" min="2" max="6" value="3">
+            </div>
+
+            <button class="btn-primary" onclick="showLiarsDeckNames()">Continuar</button>
+            <button class="btn-secondary" onclick="showModes()">Volver</button>
+        </div>
+
+        <!-- Nombres Liar's Deck -->
+        <div id="liars-deck-names-screen" class="screen">
+            <h2>Jugadores</h2>
+            <div id="liars-names-container"></div>
+            <button class="btn-primary" onclick="startLiarsDeckGame()">¡A Jugar!</button>
+            <button class="btn-secondary" onclick="showLiarsDeckSetup()">Volver</button>
+        </div>
+
+        <!-- Pantalla de configuración (Impostor Original) -->
         <div id="setup-screen" class="screen">
             <h2>Configurar Juego</h2>
 
@@ -40,7 +76,6 @@
                     <option value="peliculas">🎬 Películas</option>
                     <option value="paises">🌍 Países</option>
                     <option value="profesiones">👨‍💼 Profesiones</option>
-                    <option value="colores">🎨 Colores</option>
                     <option value="objetos">📱 Objetos</option>
                     <option value="musica">🎵 Música</option>
                     <option value="tecnologia">💻 Tecnología</option>
@@ -84,6 +119,11 @@
             </div>
 
             <div class="setup-section">
+                <label>Tiempo de discusión (minutos, 0 = infinito):</label>
+                <input type="number" id="discussion-time" min="0" max="60" value="0" placeholder="0 para infinito">
+            </div>
+
+            <div class="setup-section">
                 <label>Tipo de rondas:</label>
                 <select id="round-type">
                     <option value="elimination">🎯 Eliminación por rondas</option>
@@ -113,7 +153,7 @@
             <button id="start-discussion-btn" class="btn-success hidden" onclick="startDiscussion()">Iniciar
                 Discusión</button>
         </div>
-        
+
         <!-- Botón Nuevo Juego fuera del contenedor principal -->
         <div id="new-game-container" class="new-game-outside">
             <button class="btn-secondary" onclick="showHomeAndReset()">🎲 Nuevo Juego</button>
@@ -123,7 +163,7 @@
         <div id="individual-role-screen" class="screen">
             <h2 id="selected-player-name"></h2>
             <div class="role-reveal-container">
-                <div class="role-reveal-card" onclick="revealRoleFixed()">
+                <div class="role-reveal-card" onclick="revealRole()">
                     <div class="role-reveal-text">
                         <h3>👆 Toca para ver tu rol</h3>
                         <p>Asegúrate de que nadie más esté mirando</p>
@@ -223,11 +263,13 @@
                 <p><strong>Modo Loco:</strong></p>
                 <p>• <strong>Todos Inocentes:</strong> Nadie es impostor, deben darse cuenta</p>
                 <p>• <strong>Todos Impostores:</strong> Nadie conoce la palabra real</p>
-                
+
                 <p><strong>Modo Roles+:</strong> Añade roles especiales al juego</p>
                 <p>• <strong>🎭 Impostor:</strong> No conoce la palabra (como siempre)</p>
-                <p>• <strong>🟠 Ayudante:</strong> Conoce la palabra y quién es el impostor. Debe ayudar al impostor a ganar sin ser descubierto. Tiene palabras TABÚ que no puede decir.</p>
-                <p>• <strong>🔵 Niño Inocente:</strong> Es un inocente normal, pero si lo eliminan, ¡ÉL GANA! Debe jugar normal pero si sospechan de él, perfecto.</p>
+                <p>• <strong>🟠 Ayudante:</strong> Conoce la palabra y quién es el impostor. Debe ayudar al impostor a
+                    ganar sin ser descubierto. Tiene palabras TABÚ que no puede decir.</p>
+                <p>• <strong>🔵 Niño Inocente:</strong> Es un inocente normal, pero si lo eliminan, ¡ÉL GANA! Debe jugar
+                    normal pero si sospechan de él, perfecto.</p>
                 <p>• <strong>😇 Inocentes:</strong> Conocen la palabra (como siempre)</p>
             </div>
             <button class="btn-primary" onclick="showHome()">Volver</button>
@@ -260,9 +302,6 @@
                     </label>
                     <label class="checkbox-label">
                         <input type="checkbox" id="cat-profesiones" value="profesiones" checked> 👨‍💼 Profesiones
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="cat-colores" value="colores" checked> 🎨 Colores
                     </label>
                     <label class="checkbox-label">
                         <input type="checkbox" id="cat-objetos" value="objetos" checked> 📱 Objetos
@@ -310,7 +349,7 @@
                             <option value="2">2</option>
                         </select>
                     </div>
-                    
+
                     <div class="role-item helper">
                         <div class="role-header">
                             <span class="role-emoji">🟠</span>
@@ -322,7 +361,7 @@
                             <option value="2">2</option>
                         </select>
                     </div>
-                    
+
                     <div class="role-item child">
                         <div class="role-header">
                             <span class="role-emoji">🔵</span>
@@ -335,7 +374,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="roles-warning" id="roles-warning" style="display: none;">
                     <div class="warning-content">
                         <span class="warning-icon">⚠️</span>
@@ -352,7 +391,73 @@
         </div>
     </div>
 
+    <!-- PANTALLAS LIAR'S DECK -->
+
+    <!-- Pantalla Intermedia (Negra) -->
+    <div id="liars-deck-interstitial-screen" class="screen">
+        <div class="interstitial-content" onclick="LiarsDeck.startTurn()">
+            <h2>Siguiente Turno</h2>
+            <div id="liars-next-player-name" class="big-name">Jugador X</div>
+            <p>Toca la pantalla para comenzar tu turno</p>
+            <p class="warning-text">Asegúrate de que nadie más esté mirando</p>
+        </div>
+    </div>
+
+    <!-- Pantalla de Juego (Turno) -->
+    <div id="liars-deck-turn-screen" class="screen">
+        <div class="game-header">
+            <div class="table-info">
+                <span>MESA DE:</span>
+                <span id="liars-table-type" class="highlight-type">REYES (K)</span>
+            </div>
+            <div class="turn-info">
+                Turno de: <span id="liars-current-player">Jugador X</span>
+            </div>
+        </div>
+
+        <div id="liars-shot-counter-container" class="shot-counter-container">
+            <!-- Badges de disparos -->
+        </div>
+
+        <div id="liars-hand-container" class="cards-container">
+            <!-- Las cartas se generarán aquí -->
+        </div>
+
+        <div class="action-area">
+            <div class="selection-info">
+                Seleccionadas: <span id="liars-selected-count">0</span>/3
+            </div>
+
+            <button id="liars-play-btn" class="btn-primary" onclick="LiarsDeck.playCards()">
+                Jugar Cartas
+            </button>
+            <button id="liars-challenge-btn" class="btn-secondary hidden" onclick="LiarsDeck.challenge()">
+                Levantar (Desafiar)
+            </button>
+        </div>
+    </div>
+
+    <!-- Pantalla de Ruleta/Desafío -->
+    <div id="liars-deck-roulette-screen" class="screen">
+        <h2>Desafío</h2>
+        <div id="challenge-result-area">
+            <!-- Resultado del desafío (mostró cartas) -->
+        </div>
+
+        <div id="revolver-area" class="hidden">
+            <div class="revolver-visual">
+                🔫
+                <!-- Aquí iría la animación del revolver -->
+            </div>
+            <div id="revolver-message">Gira el tambor...</div>
+            <button id="liars-trigger-btn" class="btn-primary" onclick="LiarsDeck.pullTrigger()">
+                Apretar Gatillo
+            </button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="liarsDeck.js"></script>
 </body>
 
 </html>
